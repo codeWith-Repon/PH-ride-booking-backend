@@ -8,13 +8,15 @@ interface EnvConfig {
     PORT: string;
     DB_URL: string;
     NODE_ENV: string;
+    BCRYPT_SALT_ROUND: string;
 }
 
 const loadEnvVariables = (): EnvConfig => {
     const requiredEnvVariables: string[] = [
         "PORT",
         "DB_URL",
-        "NODE_ENV"
+        "NODE_ENV",
+        "BCRYPT_SALT_ROUND"
     ]
 
     requiredEnvVariables.forEach(key => {
@@ -26,7 +28,8 @@ const loadEnvVariables = (): EnvConfig => {
     return {
         PORT: process.env.PORT!,
         DB_URL: process.env.DB_URL!,
-        NODE_ENV: process.env.NODE_ENV!
+        NODE_ENV: process.env.NODE_ENV!,
+        BCRYPT_SALT_ROUND: process.env.BCRYPT_SALT_ROUND!
     }
 }
 
