@@ -58,9 +58,23 @@ const updateUser = catchAsync(async (req: Request, res: Response, next: NextFunc
     })
 })
 
+const getMe = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+
+    const decodedToken = req.user
+    const result = await UserServices.getMe(decodedToken)
+
+    sendResponse(res, {
+        success: true,
+        statusCode: 200,
+        message: "Your Profile Retrieved successfully",
+        data: result
+    })
+})
+
 export const UserController = {
     createUser,
     getAllUser,
     getSingleUser,
-    updateUser
+    updateUser,
+    getMe
 }

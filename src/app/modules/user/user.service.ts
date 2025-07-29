@@ -88,11 +88,17 @@ const updateUser = async (userId: string, payload: IUser, decodedToken: JwtPaylo
     return userObj
 }
 
+const getMe = async (decodedToken: JwtPayload) => {
+    const user = User.findById(decodedToken.userId).select("-password");
+    return user
+}
+
 
 
 export const UserServices = {
     createUser,
     getAllUser,
     getSingleUser,
-    updateUser
+    updateUser,
+    getMe
 }
