@@ -74,4 +74,7 @@ export const updateUserZodSchema = z.object({
     isVerified: z
         .boolean()
         .optional(),
+    isDeleted: z
+        .boolean()
+        .optional(),
 });

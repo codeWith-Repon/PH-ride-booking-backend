@@ -53,6 +53,10 @@ const userSchema = new Schema<IUser>({
         type: Boolean,
         default: false
     },
+    isDeleted: {
+        type: Boolean,
+        default: false
+    },
     auths: [authProviderSchema]
 }, {
     timestamps: true

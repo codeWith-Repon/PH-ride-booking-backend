@@ -1,7 +1,10 @@
-import { Router } from "express";
 import { UserController } from "./user.controller";
 import validateRequest from "../../middlewares/validateRequest";
 import { createUserZodSchema } from "./user.validation";
+import { Role } from "./user.interface";
+import { checkAuth } from "../../middlewares/checkAuth";
+import { Router } from "express";
+
 
 const router = Router()
 
@@ -13,11 +16,13 @@ router.post(
 
 router.get(
     "/all-user",
+    checkAuth(Role.ADMIN, Role.SUPER_ADMIN),
     UserController.getAllUser
 )
 
 router.get(
     "/:userId",
+    checkAuth(Role.ADMIN, Role.SUPER_ADMIN),
     UserController.getSingleUser
 )
 
