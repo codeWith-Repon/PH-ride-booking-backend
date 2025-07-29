@@ -36,7 +36,9 @@ const userSchema = new Schema<IUser>({
         default: Role.RIDER
     },
     phone: {
-        type: String
+        type: String,
+        required: true,
+        unique: true
     },
     address: {
         type: String
