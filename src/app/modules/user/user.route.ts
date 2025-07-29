@@ -19,11 +19,15 @@ router.get(
     checkAuth(Role.ADMIN, Role.SUPER_ADMIN),
     UserController.getAllUser
 )
-
 router.get(
     "/:userId",
     checkAuth(Role.ADMIN, Role.SUPER_ADMIN),
     UserController.getSingleUser
+)
+router.patch(
+    "/:userId",
+    checkAuth(...Object.values(Role)),
+    UserController.updateUser
 )
 
 

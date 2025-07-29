@@ -42,8 +42,25 @@ const getSingleUser = catchAsync(async (req: Request, res: Response, next: NextF
     })
 })
 
+const updateUser = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+
+    const { userId } = req.params
+    const payload = req.body
+    const decodedToken = req.user
+
+    const result = await UserServices.updateUser(userId, payload, decodedToken)
+
+    sendResponse(res, {
+        success: true,
+        statusCode: 200,
+        message: "User updated successfully",
+        data: result
+    })
+})
+
 export const UserController = {
     createUser,
     getAllUser,
-    getSingleUser
+    getSingleUser,
+    updateUser
 }
