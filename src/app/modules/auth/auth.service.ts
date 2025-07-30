@@ -1,41 +1,38 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
-/* eslint-disable unused-imports/no-unused-vars */
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import { JwtPayload } from "jsonwebtoken";
 import AppError from "../../errorHelpers/AppError";
-import { createNewAccessTokenWithRefreshToken, createUserToken } from "../../utils/userToken";
-import { IUser } from "../user/user.interface";
+import { createNewAccessTokenWithRefreshToken } from "../../utils/userToken";
 import { User } from "../user/user.model";
 import bcryptjs from "bcryptjs"
 import { envVars } from "../../config/env";
 
 
-const credentialsLogin = async (payload: Partial<IUser>) => {
-    const { email, password } = payload
+// const credentialsLogin = async (payload: Partial<IUser>) => {
+//     const { email, password } = payload
 
-    const isUserExist = await User.findOne({ email })
+//     const isUserExist = await User.findOne({ email })
 
-    if (!isUserExist) {
-        throw new AppError(404, "Email does't exit")
-    }
+//     if (!isUserExist) {
+//         throw new AppError(404, "Email does't exit")
+//     }
 
-    const isPasswordMatched = await bcryptjs.compare(password as string, isUserExist.password as string)
+//     const isPasswordMatched = await bcryptjs.compare(password as string, isUserExist.password as string)
 
-    if (!isPasswordMatched) {
-        throw new AppError(400, "Incorrect password")
-    }
+//     if (!isPasswordMatched) {
+//         throw new AppError(400, "Incorrect password")
+//     }
 
-    const userTokens = createUserToken(isUserExist)
+//     const userTokens = createUserToken(isUserExist)
 
 
-    const { password: pass, ...rest } = isUserExist.toObject()
+//     const { password: pass, ...rest } = isUserExist.toObject()
 
-    return {
-        accessToken: userTokens.accessToken,
-        refreshToken: userTokens.refreshToken,
-        user: rest
-    }
-}
+//     return {
+//         accessToken: userTokens.accessToken,
+//         refreshToken: userTokens.refreshToken,
+//         user: rest
+//     }
+// }
 
 const getNewAccessToken = async (refreshToken: string) => {
 
@@ -64,7 +61,7 @@ const changePassword = async (oldPassword: string, newPassword: string, decodedT
 
 
 export const AuthService = {
-    credentialsLogin,
+    // credentialsLogin,
     getNewAccessToken,
     changePassword
 }
