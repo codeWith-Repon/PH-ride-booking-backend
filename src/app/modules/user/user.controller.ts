@@ -4,6 +4,7 @@ import { NextFunction, Request, Response } from "express";
 import { UserServices } from "./user.service";
 import { sendResponse } from "../../utils/sendResponse";
 import { catchAsync } from "../../utils/catchAsync";
+import { JwtPayload } from "jsonwebtoken";
 
 const createUser = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
 
@@ -48,7 +49,7 @@ const updateUser = catchAsync(async (req: Request, res: Response, next: NextFunc
     const payload = req.body
     const decodedToken = req.user
 
-    const result = await UserServices.updateUser(userId, payload, decodedToken)
+    const result = await UserServices.updateUser(userId, payload, decodedToken as JwtPayload)
 
     sendResponse(res, {
         success: true,
@@ -60,7 +61,7 @@ const updateUser = catchAsync(async (req: Request, res: Response, next: NextFunc
 
 const getMe = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
 
-    const decodedToken = req.user
+    const decodedToken = req.user as JwtPayload
     const result = await UserServices.getMe(decodedToken)
 
     sendResponse(res, {
