@@ -4,9 +4,18 @@ import cors from "cors"
 import notFound from "./app/middlewares/notFound"
 import { router } from "./app/routes"
 import { globalErrorHandler } from "./app/middlewares/globalErrorHandler"
+import expressSession from "express-session"
+import passport from "passport"
 
 const app = express()
 
+app.use(expressSession({
+    secret: "Your secret",
+    resave: false,
+    saveUninitialized: false
+}))
+app.use(passport.initialize())
+app.use(passport.session())
 app.use(cookieParser())
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
