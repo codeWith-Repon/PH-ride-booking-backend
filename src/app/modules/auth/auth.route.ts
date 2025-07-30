@@ -12,8 +12,10 @@ router.post("/refresh-token", AuthController.getNewAccessToken)
 router.post("/logout", AuthController.logOut)
 router.post("/change-password", checkAuth(...Object.values(Role)), AuthController.changePassword)
 router.get("/google", async (req: Request, res: Response, next: NextFunction) => {
-    passport.authenticate("google", { scope: ["profile", "email"] })(req, res, next)
+    const redirect = req.query.redirect || "/"
+    passport.authenticate("google", { scope: ["profile", "email"], state: redirect as string })(req, res, next)
 })
+// http://localhost:5000/api/v1/auth/google?redirect=/booking successful login its redirect into http://localhost:5173/booking
 router.get("/google/callback", passport.authenticate("google", {
     failureRedirect: "/login"
 }), AuthController.googleCallbackController)
