@@ -29,16 +29,16 @@ const updateVehicle = async (payload: IVehicle, vehicleId: string, decodedToken:
 
     const vehicleOwner = vehicle.driver.toString();
 
-    const isNotOwner = vehicleOwner !== decodedToken.userId
-    const isNotAdmin = decodedToken.role !== Role.ADMIN || decodedToken.role !== Role.SUPER_ADMIN
+    const isOwner = vehicleOwner === decodedToken.userId
+    const isAdmin = decodedToken.role === Role.ADMIN || decodedToken.role === Role.SUPER_ADMIN
 
 
-    if (isNotOwner && isNotAdmin) {
+    if (!isOwner && !isAdmin) {
         throw new AppError(403, "You are not authorized to update this vehicle")
     }
 
     if (payload.isDeleted) {
-        if (isNotAdmin) {
+        if (!isAdmin) {
             throw new AppError(403, "You are not authorized to delete!!")
         }
     }

@@ -1,6 +1,8 @@
+import { JwtPayload } from "jsonwebtoken";
 import AppError from "../../errorHelpers/AppError";
 import { IDriver } from "./driver.interface";
 import { Driver } from "./driver.model";
+import { Role } from "../user/user.interface";
 
 
 const createDriver = async (payload: IDriver) => {
@@ -18,22 +20,42 @@ const createDriver = async (payload: IDriver) => {
     return newDriver
 }
 
-const updateDriver = async (payload: IDriver) => {
-    const { driver } = payload
+const updateDriver = async (userId: string, decodedToken: JwtPayload, payload: IDriver) => {
 
-    const existDriver = await Driver.findById(driver)
+    const existDriver = await Driver.findById(userId)
 
 
-    if (existDriver) {
-        throw new AppError(400, "Driver already exists")
+    if (!existDriver) {
+        throw new AppError(400, "Driver doesn't exists!!")
     }
 
-    const newDriver = await Driver.create(payload)
+    if (payload.isApproved !== undefined &&
+        decodedToken.role !== Role.ADMIN &&
+        decodedToken.role !== Role.SUPER_ADMIN) {
+        throw new AppError(400, "You can not authorized to change approve status")
+    }
 
-    return newDriver
+    const updatedDriver = await Driver.findByIdAndUpdate(userId, payload, { new: true, runValidators: true })
+
+    return updatedDriver
+}
+
+const getAllDriver = async () => {
+
+    const drivers = await Driver.find({})
+
+    return drivers
+}
+const getSingleDriver = async (userId: string) => {
+
+    const driver = await Driver.findById(userId)
+
+    return driver
 }
 
 export const driverService = {
     createDriver,
-    updateDriver
+    updateDriver,
+    getAllDriver,
+    getSingleDriver
 }
