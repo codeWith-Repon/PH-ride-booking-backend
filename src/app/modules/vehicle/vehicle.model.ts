@@ -9,7 +9,7 @@ import { Role } from "../user/user.interface";
 const vehicleSchema = new Schema<IVehicle>({
     driver: {
         type: Schema.Types.ObjectId,
-        ref: "Driver",
+        ref: "User",
         required: [true, "Driver ID is required"]
     },
     vehicleType: {

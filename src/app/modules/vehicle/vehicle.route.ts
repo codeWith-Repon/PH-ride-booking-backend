@@ -18,7 +18,6 @@ router.get("/",
     vehicleController.getAllVehicle)
 
 router.get("/:vehicleId",
-    validateRequest(updateVehicleZodSchema),
     checkAuth(Role.SUPER_ADMIN, Role.ADMIN),
     vehicleController.getSingleVehicle)
 

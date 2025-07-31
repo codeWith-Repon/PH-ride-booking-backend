@@ -36,7 +36,8 @@ export const updateVehicleZodSchema = z.object({
     vehicleLicense: z
         .string()
         .min(5, "Vehicle License must be at least 5 characters")
-        .max(15, "Vehicle License must not exceed 15 characters"),
+        .max(15, "Vehicle License must not exceed 15 characters")
+        .optional(),
     isDeleted: z
         .boolean()
         .optional()

@@ -55,7 +55,7 @@ const getAllVehicle = async () => {
 }
 
 const getSingleVehicle = async (vehicleId: string) => {
-    const vehicles = await Vehicle.findById(vehicleId)
+    const vehicles = await Vehicle.findById(vehicleId).populate("driver")
 
     return vehicles
 }
