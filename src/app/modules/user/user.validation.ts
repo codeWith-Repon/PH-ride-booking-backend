@@ -62,7 +62,7 @@ export const updateUserZodSchema = z.object({
 
     address: z.string().optional(),
 
-    picture: z.string().url().optional(),
+    image: z.string().optional(),
 
     role: z
         .enum(Object.values(Role) as [string])
