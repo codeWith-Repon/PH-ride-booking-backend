@@ -1,5 +1,9 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { model, Schema } from "mongoose";
 import { IVehicle, VehicleType } from "./vehicle.interface";
+import { User } from "../user/user.model";
+import AppError from "../../errorHelpers/AppError";
+import { Role } from "../user/user.interface";
 
 
 const vehicleSchema = new Schema<IVehicle>({
@@ -40,6 +44,38 @@ const vehicleSchema = new Schema<IVehicle>({
     }
 }, {
     timestamps: true
+})
+
+vehicleSchema.post("save", async function (doc, next) {
+    try {
+
+        const missingFields = []
+
+        const userId = doc.driver.toString()
+
+        const user = await User.findById(userId)
+
+        if (!user) {
+            throw new AppError(400, "User doesn't exists!!")
+        }
+
+        if (!user.address) missingFields.push("address")
+        if (!user.image) missingFields.push("image")
+
+        if (missingFields.length > 0) {
+            throw new AppError(
+                400,
+                `Before registering vehicle, please provided: ${missingFields.join(", ")}`
+            )
+        }
+
+        user.role = Role.DRIVER
+        await user.save()
+        next()
+
+    } catch (error: any) {
+        next(error)
+    }
 })
 
 export const Vehicle = model<IVehicle>("Vehicle", vehicleSchema)
