@@ -3,7 +3,7 @@ import { IDriver } from "./driver.interface";
 
 
 const driverSchema = new Schema<IDriver>({
-    driver: {
+    user: {
         type: Schema.Types.ObjectId,
         ref: "User",
         required: true,

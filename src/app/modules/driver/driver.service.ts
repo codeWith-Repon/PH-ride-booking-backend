@@ -6,13 +6,13 @@ import { Role } from "../user/user.interface";
 
 
 const createDriver = async (payload: IDriver) => {
-    const { driver } = payload
+    const { user } = payload
 
-    const existDriver = await Driver.findById(driver)
+    const existDriver = await Driver.findById(user)
 
 
     if (existDriver) {
-        throw new AppError(400, "Driver already exists")
+        throw new AppError(400, "User already exists")
     }
 
     const newDriver = await Driver.create(payload)
@@ -20,9 +20,9 @@ const createDriver = async (payload: IDriver) => {
     return newDriver
 }
 
-const updateDriver = async (userId: string, decodedToken: JwtPayload, payload: IDriver) => {
+const updateDriver = async (driverId: string, decodedToken: JwtPayload, payload: IDriver) => {
 
-    const existDriver = await Driver.findById(userId)
+    const existDriver = await Driver.findById(driverId)
 
 
     if (!existDriver) {
@@ -35,7 +35,7 @@ const updateDriver = async (userId: string, decodedToken: JwtPayload, payload: I
         throw new AppError(400, "You can not authorized to change approve status")
     }
 
-    const updatedDriver = await Driver.findByIdAndUpdate(userId, payload, { new: true, runValidators: true })
+    const updatedDriver = await Driver.findByIdAndUpdate(driverId, payload, { new: true, runValidators: true })
 
     return updatedDriver
 }
@@ -46,9 +46,9 @@ const getAllDriver = async () => {
 
     return drivers
 }
-const getSingleDriver = async (userId: string) => {
+const getSingleDriver = async (driverId: string) => {
 
-    const driver = await Driver.findById(userId)
+    const driver = await Driver.findById(driverId).populate("user").populate("vehicle")
 
     return driver
 }

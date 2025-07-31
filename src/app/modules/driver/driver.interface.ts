@@ -2,7 +2,7 @@ import { Types } from "mongoose";
 
 
 export interface IDriver {
-    driver: Types.ObjectId;
+    user: Types.ObjectId;
     vehicle: Types.ObjectId;
     licenseNumber: string;
     experience: number;

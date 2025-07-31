@@ -2,7 +2,7 @@ import z from "zod";
 
 
 export const createDriverZodSchema = z.object({
-    driver: z.string(),
+    user: z.string(),
     vehicle: z.string(),
     licenseNumber: z
         .string()
@@ -15,7 +15,7 @@ export const createDriverZodSchema = z.object({
 })
 
 export const updateDriverZodSchema = z.object({
-    driver: z.string().optional(),
+    user: z.string().optional(),
     vehicle: z.string().optional(),
     licenseNumber: z
         .string()
