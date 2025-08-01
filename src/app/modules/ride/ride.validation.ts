@@ -10,8 +10,8 @@ export const createRideZodSchema = z.object({
 })
 
 export const updateRideZodSchema = z.object({
-    userId: z.string().optional(),
-    driverId: z.string().optional(),
+    user: z.string().optional(),
+    driver: z.string().optional(),
     pickupLocation: z.string().optional(),
     dropLocation: z.string().optional(),
     distance: z.number().optional(),
@@ -42,3 +42,6 @@ export const updateRideZodSchema = z.object({
         .optional()
 });
 
+export const updateRideStatusZodSchema = z.object({
+    status: z.enum(RIDE_STATUS)
+})
