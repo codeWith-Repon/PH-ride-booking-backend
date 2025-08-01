@@ -3,18 +3,30 @@ import AppError from "../../errorHelpers/AppError";
 import { IDriver } from "./driver.interface";
 import { Driver } from "./driver.model";
 import { Role } from "../user/user.interface";
+import { Vehicle } from "../vehicle/vehicle.model";
 
 
 const createDriver = async (payload: IDriver) => {
-    const { user } = payload
+    const { user, vehicle } = payload
 
-    const existDriver = await Driver.findById(user)
+    const existDriver = await Driver.findOne({ user })
 
 
     if (existDriver) {
-        throw new AppError(400, "User already exists")
+        throw new AppError(400, "Driver profile already exists.");
     }
 
+    const driverVehicle = await Driver.findOne({ vehicle })
+
+    if (driverVehicle) {
+        throw new AppError(400, "This vehicle is already assigned to another driver.")
+    }
+
+    const isVehicleExist = await Vehicle.findById(vehicle)
+
+    if (!isVehicleExist) {
+        throw new AppError(400, "Vehicle is not exist!!")
+    }
     const newDriver = await Driver.create(payload)
 
     return newDriver

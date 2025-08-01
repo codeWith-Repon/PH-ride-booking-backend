@@ -46,12 +46,12 @@ const vehicleSchema = new Schema<IVehicle>({
     timestamps: true
 })
 
-vehicleSchema.post("save", async function (doc, next) {
+vehicleSchema.pre("save", async function (next) {
     try {
 
         const missingFields = []
 
-        const userId = doc.driver.toString()
+        const userId = this.driver.toString()
 
         const user = await User.findById(userId)
 
@@ -61,6 +61,10 @@ vehicleSchema.post("save", async function (doc, next) {
 
         if (!user.address) missingFields.push("address")
         if (!user.image) missingFields.push("image")
+
+        if (user.role === Role.SUPER_ADMIN) {
+            throw new AppError(400, "Super admin can not register vehicle")
+        }
 
         if (missingFields.length > 0) {
             throw new AppError(

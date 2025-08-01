@@ -1,0 +1,44 @@
+import z from "zod";
+import { RIDE_STATUS } from "./ride.interface";
+
+export const createRideZodSchema = z.object({
+    user: z.string(),
+    driver: z.string(),
+    pickupLocation: z.string(),
+    dropLocation: z.string(),
+    distance: z.number().positive().optional()
+})
+
+export const updateRideZodSchema = z.object({
+    userId: z.string().optional(),
+    driverId: z.string().optional(),
+    pickupLocation: z.string().optional(),
+    dropLocation: z.string().optional(),
+    distance: z.number().optional(),
+    status: z
+        .enum(Object.values(RIDE_STATUS) as [string])
+        .optional(),
+    fare: z.number().positive().optional(),
+    payment: z.string().optional(),
+    rideOtp: z
+        .number()
+        .int()
+        .min(100000)
+        .max(999999)
+        .optional(), // 6-digit OTP
+    isOtpVerified: z.boolean().optional(),
+    estimatedTime: z.string().optional(),
+    startedAt: z
+        .string()
+        .refine((val) => !isNaN(Date.parse(val)), {
+            message: "Invalid date format. Use ISO format"
+        })
+        .optional(),
+    completedAt: z
+        .string()
+        .refine((val) => !isNaN(Date.parse(val)), {
+            message: "Invalid date format. Use ISO format"
+        })
+        .optional()
+});
+

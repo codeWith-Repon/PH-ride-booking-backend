@@ -1,5 +1,9 @@
 import { Types } from "mongoose";
 
+export enum AVAILABILITY_STATUS {
+    ONLINE = "ONLINE",
+    OFFLINE = "OFFLINE"
+}
 
 export interface IDriver {
     user: Types.ObjectId;
@@ -8,6 +12,6 @@ export interface IDriver {
     experience: number;
     totalRides: number;
     totalEarnings: number;
-    isAvailable: boolean;
+    availabilityStatus: AVAILABILITY_STATUS;
     isApproved: boolean;
 }

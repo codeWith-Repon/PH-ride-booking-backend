@@ -1,5 +1,5 @@
 import { model, Schema } from "mongoose";
-import { IDriver } from "./driver.interface";
+import { AVAILABILITY_STATUS, IDriver } from "./driver.interface";
 
 
 const driverSchema = new Schema<IDriver>({
@@ -32,9 +32,10 @@ const driverSchema = new Schema<IDriver>({
         type: Number,
         default: 0
     },
-    isAvailable: {
-        type: Boolean,
-        default: true
+    availabilityStatus: {
+        type: String,
+        enum: Object.values(AVAILABILITY_STATUS),
+        default: AVAILABILITY_STATUS.ONLINE
     },
     isApproved: {
         type: Boolean,
