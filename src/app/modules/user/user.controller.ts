@@ -5,10 +5,15 @@ import { UserServices } from "./user.service";
 import { sendResponse } from "../../utils/sendResponse";
 import { catchAsync } from "../../utils/catchAsync";
 import { JwtPayload } from "jsonwebtoken";
+import { IUser } from "./user.interface";
 
 const createUser = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
 
-    const result = await UserServices.createUser(req.body)
+    const payload: IUser = {
+        ...req.body,
+        image: req.file?.path
+    }
+    const result = await UserServices.createUser(payload)
 
     sendResponse(res, {
         success: true,
@@ -46,9 +51,8 @@ const getSingleUser = catchAsync(async (req: Request, res: Response, next: NextF
 const updateUser = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
 
     const { userId } = req.params
-    const payload = req.body
+    const payload: IUser = { ...req.body, image: req.file?.path }
     const decodedToken = req.user
-
     const result = await UserServices.updateUser(userId, payload, decodedToken as JwtPayload)
 
     sendResponse(res, {
