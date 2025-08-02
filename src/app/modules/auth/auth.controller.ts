@@ -24,11 +24,21 @@ const credentialsLogin = catchAsync(async (req: Request, res: Response, next: Ne
             return next(new AppError(401, info.message))
         }
 
+        // if (user.role === Role.DRIVER) {
+        //     await Driver.findOneAndUpdate(
+        //         { user: user._id },
+        //         { availabilityStatus: AVAILABILITY_STATUS.ONLINE }
+        //     )
+        // }
+
         const userToken = await createUserToken(user)
 
         const { password: pass, ...rest } = user.toObject()
 
-        setAuthCookie(res, rest)
+        setAuthCookie(res, {
+            accessToken: userToken.accessToken,
+            refreshToken: userToken.refreshToken,
+        })
 
         sendResponse(res, {
             success: true,
@@ -65,6 +75,17 @@ const getNewAccessToken = catchAsync(async (req: Request, res: Response, next: N
 })
 
 const logOut = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+    // const user = req.user
+    // if (!user) {
+    //     throw new AppError(400, "User not found")
+    // }
+
+    // if (user.role === Role.DRIVER) {
+    //     await Driver.findOneAndUpdate(
+    //         { user: user.userId },
+    //         { availabilityStatus: AVAILABILITY_STATUS.OFFLINE }
+    //     )
+    // }
 
     res.clearCookie("accessToken", {
         httpOnly: true,

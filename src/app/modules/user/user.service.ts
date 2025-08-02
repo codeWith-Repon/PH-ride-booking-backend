@@ -66,7 +66,9 @@ const updateUser = async (userId: string, payload: IUser, decodedToken: JwtPaylo
         }
     }
 
-    if (payload.isActive || payload.isDeleted || payload.isVerified) {
+    if (payload.isActive !== undefined ||
+        payload.isDeleted !== undefined ||
+        payload.isVerified !== undefined) {
         if (decodedToken.role === Role.RIDER || decodedToken.role === Role.DRIVER) {
             throw new AppError(403, "You are not authorized to modify this field");
         }

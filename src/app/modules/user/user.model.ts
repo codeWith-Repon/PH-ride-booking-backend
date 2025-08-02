@@ -41,7 +41,7 @@ const userSchema = new Schema<IUser>({
     address: {
         type: String
     },
-    picture: { type: String },
+    image: { type: String },
     isActive: {
         type: String,
         enum: Object.values(IsActive),
