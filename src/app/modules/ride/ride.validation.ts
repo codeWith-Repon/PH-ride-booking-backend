@@ -2,7 +2,7 @@ import z from "zod";
 import { RIDE_STATUS } from "./ride.interface";
 
 export const createRideZodSchema = z.object({
-    user: z.string(),
+    // user: z.string(),
     driver: z.string(),
     pickupLocation: z.string(),
     dropLocation: z.string(),
@@ -10,7 +10,7 @@ export const createRideZodSchema = z.object({
 })
 
 export const updateRideZodSchema = z.object({
-    user: z.string().optional(),
+    // user: z.string().optional(),
     driver: z.string().optional(),
     pickupLocation: z.string().optional(),
     dropLocation: z.string().optional(),

@@ -22,5 +22,17 @@ router.post("/verify-otp",
     checkAuth(...Object.values(Role)),
     rideController.otpVerify)
 
+router.get("/",
+    checkAuth(Role.ADMIN, Role.SUPER_ADMIN),
+    rideController.getAllRide)
+
+router.get("/history",
+    checkAuth(Role.DRIVER, Role.RIDER),
+    rideController.getRideHistory)
+
+router.get("/:rideId",
+    checkAuth(Role.ADMIN, Role.SUPER_ADMIN),
+    rideController.getSingleRide)
+
 
 export const rideRoutes = router

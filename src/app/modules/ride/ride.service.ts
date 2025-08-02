@@ -1,28 +1,25 @@
 import { JwtPayload } from "jsonwebtoken";
 import AppError from "../../errorHelpers/AppError";
 import { Driver } from "../driver/driver.model";
-import { User } from "../user/user.model";
 import { IRide, RIDE_STATUS } from "./ride.interface";
 import { Ride } from "./ride.model";
 import { Role } from "../user/user.interface";
 
-const createRide = async (payload: IRide) => {
+const createRide = async (payload: IRide, decodedToken: JwtPayload) => {
     const generateOtp = Math.floor(100000 + Math.random() * 900000)
 
-    const { user, driver } = payload
+    const { driver } = payload
+    const { userId } = decodedToken
 
-    const isUserExist = await User.findById(user)
+
     const isDriverExist = await Driver.findById(driver)
 
-    if (!isUserExist) {
-        throw new AppError(400, "User doesn't exist")
-    }
     if (!isDriverExist) {
         throw new AppError(400, "Driver does't exist")
     }
 
     const checkRiderOngoingRide = await Ride.findOne({
-        user,
+        user: userId,
         status: {
             $in: [RIDE_STATUS.ACCEPTED, RIDE_STATUS.PICKED_UP, RIDE_STATUS.IN_TRANSIT]
         }
@@ -42,13 +39,14 @@ const createRide = async (payload: IRide) => {
     if (checkDriverOngoingRide) {
         throw new AppError(400, "Driver is currently on another ride")
     }
-    const alreadyRequestedUser = await Ride.findOne({ user })
+    const alreadyRequestedUser = await Ride.findOne({ user: userId })
     if (alreadyRequestedUser &&
         alreadyRequestedUser.status === RIDE_STATUS.REQUESTED &&
         payload.user) {
         throw new AppError(400, "You are already sent request")
     }
     payload.rideOtp = generateOtp
+    payload.user = userId
     const ride = await Ride.create(payload)
 
     return ride
@@ -97,7 +95,6 @@ const updateRideStatus = async (payload: Partial<IRide>, decodedToken: JwtPayloa
     }
 }
 
-
 const otpVerify = async (payload: { otp: string }, decodedToken: JwtPayload) => {
     const { userId, role } = decodedToken
 
@@ -125,8 +122,56 @@ const otpVerify = async (payload: { otp: string }, decodedToken: JwtPayload) => 
     return
 }
 
+const getAllRide = async () => {
+    const rides = await Ride.find()
+
+    return rides
+}
+
+const getSingleRide = async (rideId: string) => {
+    const ride = await Ride.findById(rideId)
+
+    return ride
+}
+
+const getRideHistory = async (decodedToken: JwtPayload) => {
+
+    const { userId, role } = decodedToken
+
+    if (role === Role.DRIVER) {
+        const driverInfo = await Driver.findOne({ user: userId })
+
+        if (!driverInfo) {
+            throw new AppError(404, "Driver profile not found!")
+        }
+
+        const rides = await Ride.find({ driver: driverInfo._id })
+
+        if (rides.length === 0) {
+            throw new AppError(404, "No ride history found for driver!");
+        }
+        return rides
+    }
+
+    if (role === Role.RIDER) {
+        const rides = await Ride.find({ user: userId })
+
+        if (rides.length === 0) {
+            throw new AppError(404, "No ride history found for rider!");
+        }
+
+        return rides
+    }
+    throw new AppError(403, "Unauthorized role for ride history");
+}
+
+
+
 export const RideServices = {
     createRide,
     updateRideStatus,
-    otpVerify
+    otpVerify,
+    getAllRide,
+    getSingleRide,
+    getRideHistory
 }

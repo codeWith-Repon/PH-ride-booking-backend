@@ -8,7 +8,7 @@ import { JwtPayload } from "jsonwebtoken"
 
 const createRide = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
 
-    const result = await RideServices.createRide(req.body)
+    const result = await RideServices.createRide(req.body, req.user as JwtPayload)
 
     sendResponse(res, {
         success: true,
@@ -44,8 +44,49 @@ const otpVerify = catchAsync(async (req: Request, res: Response, next: NextFunct
     })
 })
 
+const getAllRide = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+
+    const result = await RideServices.getAllRide()
+
+    sendResponse(res, {
+        success: true,
+        statusCode: 201,
+        message: "All Ride Retrieved Successfully!",
+        data: result
+    })
+})
+
+const getSingleRide = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+
+    const { rideId } = req.params;
+    const result = await RideServices.getSingleRide(rideId)
+
+    sendResponse(res, {
+        success: true,
+        statusCode: 201,
+        message: "Ride Retrieved Successfully!",
+        data: result
+    })
+})
+
+const getRideHistory = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+
+    const decodedToken = req.user as JwtPayload
+    const result = await RideServices.getRideHistory(decodedToken)
+
+    sendResponse(res, {
+        success: true,
+        statusCode: 201,
+        message: "Ride History Retrieved Successfully!",
+        data: result
+    })
+})
+
 export const rideController = {
     createRide,
     updateRideStatus,
-    otpVerify
+    otpVerify,
+    getAllRide,
+    getSingleRide,
+    getRideHistory
 }
