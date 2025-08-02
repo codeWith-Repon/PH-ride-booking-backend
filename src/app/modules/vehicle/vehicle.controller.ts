@@ -5,12 +5,17 @@ import { catchAsync } from "../../utils/catchAsync"
 import { vehicleService } from "./vehicle.service"
 import { sendResponse } from "../../utils/sendResponse"
 import { JwtPayload } from "jsonwebtoken"
+import { IVehicle } from "./vehicle.interface"
 
 
 
 const createVehicle = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
-    const payload = req.body
-    const result = await vehicleService.createVehicle(payload)
+    const payload: IVehicle = {
+        ...req.body,
+        image: (req.files as Express.Multer.File[])?.map(file => file.path)
+    }
+    const decodedToken = req.user as JwtPayload
+    const result = await vehicleService.createVehicle(payload, decodedToken)
     sendResponse(res, {
         success: true,
         statusCode: 201,

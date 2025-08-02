@@ -4,11 +4,13 @@ import validateRequest from "../../middlewares/validateRequest";
 import { createVehicleZodSchema, updateVehicleZodSchema } from "./vehicle.validation";
 import { checkAuth } from "../../middlewares/checkAuth";
 import { Role } from "../user/user.interface";
+import { multerUpload } from "../../config/multer.config";
 
 
 const router = Router()
 
 router.post("/create",
+    multerUpload.array("files"),
     validateRequest(createVehicleZodSchema),
     checkAuth(...Object.values(Role)),
     vehicleController.createVehicle)
@@ -22,6 +24,7 @@ router.get("/:vehicleId",
     vehicleController.getSingleVehicle)
 
 router.patch("/update/:vehicleId",
+    multerUpload.array("files"),
     validateRequest(updateVehicleZodSchema),
     checkAuth(...Object.values(Role)),
     vehicleController.updateVehicle)

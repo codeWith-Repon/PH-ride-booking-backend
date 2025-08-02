@@ -69,7 +69,7 @@ vehicleSchema.pre("save", async function (next) {
         if (missingFields.length > 0) {
             throw new AppError(
                 400,
-                `Before registering vehicle, please provided: ${missingFields.join(", ")}`
+                `Before registering vehicle, update your profile: ${missingFields.join(", ")}`
             )
         }
 
