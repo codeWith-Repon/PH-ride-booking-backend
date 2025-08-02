@@ -5,7 +5,7 @@ import { Vehicle } from "./vehicle.model";
 import { Role } from "../user/user.interface";
 
 
-const createVehicle = async (payload: IVehicle) => {
+const createVehicle = async (payload: IVehicle, decodedToken: JwtPayload) => {
 
     const { vehicleLicense } = payload
 
@@ -15,8 +15,11 @@ const createVehicle = async (payload: IVehicle) => {
     if (isVehicleExist) {
         throw new AppError(400, "Vehicle already registered!!");
     }
-
-    const newVehicle = await Vehicle.create(payload)
+    const vehiclePayload = {
+        ...payload,
+        driver: decodedToken.userId
+    }
+    const newVehicle = await Vehicle.create(vehiclePayload)
     return newVehicle
 }
 

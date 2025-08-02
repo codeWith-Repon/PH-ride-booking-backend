@@ -2,7 +2,7 @@ import z from "zod";
 import { VehicleType } from "./vehicle.interface";
 
 export const createVehicleZodSchema = z.object({
-    driver: z.string(),
+    // driver: z.string(),
     vehicleType: z
         .enum(Object.values(VehicleType) as string[], { message: "Invalid vehicle type" }),
     brand: z
