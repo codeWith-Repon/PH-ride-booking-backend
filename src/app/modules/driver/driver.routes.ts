@@ -13,6 +13,11 @@ router.post("/create",
     checkAuth(...Object.values(Role)),
     driverController.createDriver)
 
+router.post("/change-status/:driverId",
+    validateRequest(updateDriverZodSchema),
+    checkAuth(Role.SUPER_ADMIN, Role.ADMIN),
+    driverController.changeDriverStatus)
+
 router.get("/drivers",
     checkAuth(...Object.values(Role)),
     driverController.getAllDriver)

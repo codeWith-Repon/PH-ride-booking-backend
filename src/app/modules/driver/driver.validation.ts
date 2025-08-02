@@ -1,5 +1,5 @@
 import z from "zod";
-import { AVAILABILITY_STATUS } from "./driver.interface";
+import { AVAILABILITY_STATUS, DRIVER_STATUS } from "./driver.interface";
 
 
 export const createDriverZodSchema = z.object({
@@ -28,8 +28,8 @@ export const updateDriverZodSchema = z.object({
         .min(0, "Experience cannot be negative")
         .max(30, "Experience seems too high")
         .optional(),
-    isApproved: z
-        .boolean()
+    status: z
+        .enum(Object.values(DRIVER_STATUS))
         .optional(),
     availabilityStatus: z
         .enum(Object.values(AVAILABILITY_STATUS) as string[])

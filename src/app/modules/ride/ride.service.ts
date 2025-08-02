@@ -59,57 +59,93 @@ const updateRideStatus = async (payload: Partial<IRide>, decodedToken: JwtPayloa
         if (payload.status === RIDE_STATUS.CANCELLED ||
             payload.status === RIDE_STATUS.REQUESTED
         ) {
-            return await Ride.findOneAndUpdate({ user: userId }, payload, { new: true })
+            const updatedRide = await Ride.findOneAndUpdate({ user: userId }, payload, { new: true })
+
+            if (!updatedRide) {
+                throw new AppError(404, "No active ride found to update.")
+            }
+            return updatedRide
         }
-        throw new AppError(400, "Rider can only cancel or request the ride!")
+        throw new AppError(403, "Rider can only cancel or request the ride!")
     }
 
     if (role !== Role.DRIVER) {
-        throw new AppError(400, "You can't change ride status!")
+        throw new AppError(403, "You can't change ride status!")
     }
 
-    if (role === Role.DRIVER) {
-        const driverInfo = await Driver.findOne({ user: userId })
+    const driverInfo = await Driver.findOne({ user: userId })
 
-        if (!driverInfo) {
-            throw new AppError(404, "Driver profile not found!")
-        }
+    if (!driverInfo) {
+        throw new AppError(404, "Driver profile not found!")
+    }
 
-        const currentRide = await Ride.findOne({ driver: driverInfo._id, status: { $ne: RIDE_STATUS.COMPLETED } })
+    const currentRide = await Ride.findOne({ driver: driverInfo._id })
 
-        if (!currentRide) {
-            throw new AppError(400, "No ongoing ride found for driver")
-        }
+    if (!currentRide) {
+        throw new AppError(400, "No ongoing ride found for driver")
+    }
 
-        if (payload.status === RIDE_STATUS.PICKED_UP ||
-            payload.status === RIDE_STATUS.IN_TRANSIT ||
-            payload.status === RIDE_STATUS.COMPLETED
+    if (currentRide.status === RIDE_STATUS.COMPLETED) {
+        throw new AppError(403, "Completed rides cannot be modified.");
+    }
+
+    if (payload.status === RIDE_STATUS.CANCELLED) {
+        if (
+            currentRide.status === RIDE_STATUS.ACCEPTED ||
+            currentRide.status === RIDE_STATUS.PICKED_UP ||
+            currentRide.status === RIDE_STATUS.IN_TRANSIT
         ) {
-            if (!currentRide.isOtpVerified) {
-                throw new AppError(400, "OTP is not verified yet. Can't start the ride.")
-            }
+            throw new AppError(400, "Ride is already accepted or ongoing. You can't cancel now.")
+        }
+    }
+
+    if (payload.status === RIDE_STATUS.PICKED_UP ||
+        payload.status === RIDE_STATUS.IN_TRANSIT ||
+        payload.status === RIDE_STATUS.COMPLETED
+    ) {
+        if (!currentRide.isOtpVerified) {
+            throw new AppError(400, "OTP is not verified yet. Can't start the ride.")
+        }
+    }
+
+    if (payload.status === RIDE_STATUS.PICKED_UP && currentRide.isOtpVerified) {
+        currentRide.startedAt = new Date()
+        await currentRide.save()
+    }
+
+    if (payload.status === RIDE_STATUS.COMPLETED && currentRide.isOtpVerified) {
+        currentRide.completedAt = new Date()
+        await currentRide.save()
+    }
+
+    if (role === Role.DRIVER && payload.status === RIDE_STATUS.ACCEPTED) {
+        const existingAcceptedRideForDriver = await Ride.findOne({
+            driver: driverInfo._id,
+            status: RIDE_STATUS.ACCEPTED,
+        });
+
+        if (existingAcceptedRideForDriver && existingAcceptedRideForDriver._id.toString() !== currentRide._id.toString()) {
+            throw new AppError(400, "You already have an accepted ride. Complete or cancel it before accepting a new one.");
         }
 
-        if (payload.status === RIDE_STATUS.PICKED_UP && currentRide.isOtpVerified) {
-            currentRide.startedAt = new Date()
-            await currentRide.save()
+        if (
+            currentRide.driver &&
+            currentRide.driver.toString() !== driverInfo._id.toString() &&
+            currentRide.status === RIDE_STATUS.ACCEPTED
+        ) {
+            throw new AppError(400, "This ride is already accepted by another driver.");
         }
-
-        if (payload.status === RIDE_STATUS.COMPLETED && currentRide.isOtpVerified) {
-            currentRide.completedAt = new Date()
-            await currentRide.save()
-        }
-
-
-        return await Ride.findOneAndUpdate({ driver: driverInfo._id }, payload, { new: true })
 
     }
+
+    return await Ride.findOneAndUpdate({ driver: driverInfo._id }, payload, { new: true })
+
 }
 
 const otpVerify = async (payload: { otp: string }, decodedToken: JwtPayload) => {
     const { userId, role } = decodedToken
 
-    if ([Role.SUPER_ADMIN, Role.ADMIN, Role.DRIVER].includes(role)) {
+    if ([Role.SUPER_ADMIN, Role.ADMIN].includes(role)) {
         throw new AppError(400, "You are not allowed to verify ride OTP!")
     }
 
@@ -125,6 +161,10 @@ const otpVerify = async (payload: { otp: string }, decodedToken: JwtPayload) => 
 
     if (rideInfo.rideOtp !== Number(payload.otp)) {
         throw new AppError(400, "Invalid OTP")
+    }
+
+    if (rideInfo.isOtpVerified) {
+        throw new AppError(400, "Already verify this ride!!")
     }
 
     rideInfo.isOtpVerified = true;

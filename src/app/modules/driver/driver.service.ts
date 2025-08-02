@@ -32,6 +32,24 @@ const createDriver = async (payload: IDriver) => {
     return newDriver
 }
 
+const changeDriverStatus = async (driverId: string, decodedToken: JwtPayload, payload: IDriver) => {
+    const { role } = decodedToken
+
+    if (role !== Role.ADMIN && role !== Role.SUPER_ADMIN) {
+        throw new AppError(403, "You are not authorize to change driver status.")
+    }
+
+    const updatedDriver = await Driver.findOneAndUpdate(
+        { user: driverId },
+        payload,
+        { new: true, runValidators: true }
+    )
+
+    return updatedDriver
+
+}
+
+
 const updateDriver = async (driverId: string, decodedToken: JwtPayload, payload: IDriver) => {
 
     const existDriver = await Driver.findById(driverId)
@@ -41,7 +59,7 @@ const updateDriver = async (driverId: string, decodedToken: JwtPayload, payload:
         throw new AppError(400, "Driver doesn't exists!!")
     }
 
-    if (payload.isApproved !== undefined &&
+    if (payload.status !== undefined &&
         decodedToken.role !== Role.ADMIN &&
         decodedToken.role !== Role.SUPER_ADMIN) {
         throw new AppError(400, "You can not authorized to change approve status")
@@ -67,6 +85,7 @@ const getSingleDriver = async (driverId: string) => {
 
 export const driverService = {
     createDriver,
+    changeDriverStatus,
     updateDriver,
     getAllDriver,
     getSingleDriver

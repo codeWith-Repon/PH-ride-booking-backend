@@ -5,6 +5,12 @@ export enum AVAILABILITY_STATUS {
     OFFLINE = "OFFLINE"
 }
 
+export enum DRIVER_STATUS {
+    PENDING = "PENDING",
+    APPROVED = "APPROVED",
+    SUSPENDED = "SUSPENDED"
+}
+
 export interface IDriver {
     user: Types.ObjectId;
     vehicle: Types.ObjectId;
@@ -13,5 +19,5 @@ export interface IDriver {
     totalRides: number;
     totalEarnings: number;
     availabilityStatus: AVAILABILITY_STATUS;
-    isApproved: boolean;
+    status: DRIVER_STATUS;
 }
