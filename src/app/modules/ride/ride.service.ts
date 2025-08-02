@@ -90,6 +90,17 @@ const updateRideStatus = async (payload: Partial<IRide>, decodedToken: JwtPayloa
             }
         }
 
+        if (payload.status === RIDE_STATUS.PICKED_UP && currentRide.isOtpVerified) {
+            currentRide.startedAt = new Date()
+            await currentRide.save()
+        }
+
+        if (payload.status === RIDE_STATUS.COMPLETED && currentRide.isOtpVerified) {
+            currentRide.completedAt = new Date()
+            await currentRide.save()
+        }
+
+
         return await Ride.findOneAndUpdate({ driver: driverInfo._id }, payload, { new: true })
 
     }
