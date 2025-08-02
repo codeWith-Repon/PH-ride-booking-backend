@@ -15,7 +15,8 @@ export interface IVehicle {
     vehicleType: VehicleType,
     brand: string,
     model: string,
-    image?: string[],
+    images?: string[],
     vehicleLicense: string,
-    isDeleted: boolean
+    isDeleted: boolean,
+    deleteImages?: string[]
 }

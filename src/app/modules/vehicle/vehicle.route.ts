@@ -24,6 +24,7 @@ router.get("/:vehicleId",
     vehicleController.getSingleVehicle)
 
 router.patch("/update/:vehicleId",
+    multerUpload.array("files"),
     validateRequest(updateVehicleZodSchema),
     checkAuth(...Object.values(Role)),
     vehicleController.updateVehicle)

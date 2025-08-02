@@ -3,6 +3,7 @@ import AppError from "../../errorHelpers/AppError";
 import { IVehicle } from "./vehicle.interface";
 import { Vehicle } from "./vehicle.model";
 import { Role } from "../user/user.interface";
+import { deleteImageFromCloudinary } from "../../config/cloudinary.config";
 
 
 const createVehicle = async (payload: IVehicle, decodedToken: JwtPayload) => {
@@ -46,7 +47,25 @@ const updateVehicle = async (payload: IVehicle, vehicleId: string, decodedToken:
         }
     }
 
+    if (payload.images && payload.images.length > 0 && vehicle.images && vehicle.images.length > 0) {
+        payload.images = [...payload.images, ...vehicle.images]
+
+        if (payload.deleteImages && payload.deleteImages.length > 0 && vehicle.images && vehicle.images.length > 0) {
+            const restDBImages = vehicle.images.filter(imageUrl => !payload.deleteImages?.includes(imageUrl))
+
+            const updatedPayloadImages = (payload.images || [])
+                .filter(imageUrl => !payload.deleteImages?.includes(imageUrl))
+                .filter(imageUrl => !restDBImages?.includes(imageUrl))
+
+            payload.images = [...restDBImages, ...updatedPayloadImages]
+        }
+    }
+
     const updatedVehicle = await Vehicle.findByIdAndUpdate(vehicleId, payload, { new: true, runValidators: true })
+
+    if (payload.deleteImages && payload.deleteImages.length > 0 && vehicle.images && vehicle.images?.length > 0) {
+        await Promise.all(payload.deleteImages.map(url => deleteImageFromCloudinary(url)))
+    }
 
     return updatedVehicle
 }
