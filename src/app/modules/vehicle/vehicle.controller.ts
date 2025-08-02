@@ -12,7 +12,7 @@ import { IVehicle } from "./vehicle.interface"
 const createVehicle = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
     const payload: IVehicle = {
         ...req.body,
-        image: (req.files as Express.Multer.File[])?.map(file => file.path)
+        images: ((req.files as Express.Multer.File[]).map(file => file.path))
     }
     const decodedToken = req.user as JwtPayload
     const result = await vehicleService.createVehicle(payload, decodedToken)
@@ -27,7 +27,10 @@ const createVehicle = catchAsync(async (req: Request, res: Response, next: NextF
 const updateVehicle = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
     const decodedToken = req.user as JwtPayload
     const { vehicleId } = req.params
-    const payload = req.body
+    const payload: IVehicle = {
+        ...req.body,
+        images: ((req.files as Express.Multer.File[]).map(file => file.path))
+    }
 
     const result = await vehicleService.updateVehicle(payload, vehicleId, decodedToken)
     sendResponse(res, {

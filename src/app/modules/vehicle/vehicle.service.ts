@@ -25,13 +25,13 @@ const createVehicle = async (payload: IVehicle, decodedToken: JwtPayload) => {
 }
 
 const updateVehicle = async (payload: IVehicle, vehicleId: string, decodedToken: JwtPayload) => {
-    const vehicle = await Vehicle.findById(vehicleId)
+    const existVehicle = await Vehicle.findById(vehicleId)
 
-    if (!vehicle) {
+    if (!existVehicle) {
         throw new AppError(400, "Vehicle not found!!");
     }
 
-    const vehicleOwner = vehicle.driver.toString();
+    const vehicleOwner = existVehicle.driver.toString();
 
     const isOwner = vehicleOwner === decodedToken.userId
     const isAdmin = decodedToken.role === Role.ADMIN || decodedToken.role === Role.SUPER_ADMIN
@@ -47,23 +47,24 @@ const updateVehicle = async (payload: IVehicle, vehicleId: string, decodedToken:
         }
     }
 
-    if (payload.images && payload.images.length > 0 && vehicle.images && vehicle.images.length > 0) {
-        payload.images = [...payload.images, ...vehicle.images]
-
-        if (payload.deleteImages && payload.deleteImages.length > 0 && vehicle.images && vehicle.images.length > 0) {
-            const restDBImages = vehicle.images.filter(imageUrl => !payload.deleteImages?.includes(imageUrl))
-
-            const updatedPayloadImages = (payload.images || [])
-                .filter(imageUrl => !payload.deleteImages?.includes(imageUrl))
-                .filter(imageUrl => !restDBImages?.includes(imageUrl))
-
-            payload.images = [...restDBImages, ...updatedPayloadImages]
-        }
+    if (payload.images && payload.images.length > 0 && existVehicle.images && existVehicle.images.length > 0) {
+        payload.images = [...payload.images, ...existVehicle.images]
     }
+
+    if (payload.deleteImages && payload.deleteImages.length > 0 && existVehicle.images && existVehicle.images.length > 0) {
+        const restDBImages = existVehicle.images.filter(imageUrl => !payload.deleteImages?.includes(imageUrl))
+
+        const updatedPayloadImages = (payload.images || [])
+            .filter(imageUrl => !payload.deleteImages?.includes(imageUrl))
+            .filter(imageUrl => !restDBImages?.includes(imageUrl))
+
+        payload.images = [...restDBImages, ...updatedPayloadImages]
+    }
+
 
     const updatedVehicle = await Vehicle.findByIdAndUpdate(vehicleId, payload, { new: true, runValidators: true })
 
-    if (payload.deleteImages && payload.deleteImages.length > 0 && vehicle.images && vehicle.images?.length > 0) {
+    if (payload.deleteImages && payload.deleteImages.length > 0 && existVehicle.images && existVehicle.images?.length > 0) {
         await Promise.all(payload.deleteImages.map(url => deleteImageFromCloudinary(url)))
     }
 

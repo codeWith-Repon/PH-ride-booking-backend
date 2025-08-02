@@ -29,7 +29,7 @@ const vehicleSchema = new Schema<IVehicle>({
         type: String,
         required: [true, "Brand name is required"]
     },
-    image: {
+    images: {
         type: [String],
         default: []
     },
