@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 import { JwtPayload } from "jsonwebtoken";
-import AppError from "../../errorHelpers/AppError";
+import AppError from "../../app/errorHelpers/AppError";
 import { createNewAccessTokenWithRefreshToken } from "../../utils/userToken";
 import { User } from "../user/user.model";
 import bcryptjs from "bcryptjs"

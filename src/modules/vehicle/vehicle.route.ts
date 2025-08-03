@@ -9,18 +9,18 @@ import { multerUpload } from "../../config/multer.config";
 
 const router = Router()
 
-router.post("/create",
+router.post("/register",
     checkAuth(...Object.values(Role)),
     multerUpload.array("files"),
     validateRequest(createVehicleZodSchema),
     vehicleController.createVehicle)
 
-router.get("/",
+router.get("/vehicles",
     checkAuth(Role.SUPER_ADMIN, Role.ADMIN),
     vehicleController.getAllVehicle)
 
 router.get("/:vehicleId",
-    checkAuth(Role.SUPER_ADMIN, Role.ADMIN),
+    checkAuth(Role.SUPER_ADMIN, Role.ADMIN, Role.DRIVER),
     vehicleController.getSingleVehicle)
 
 router.patch("/update/:vehicleId",

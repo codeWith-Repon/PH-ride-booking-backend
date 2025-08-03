@@ -2,7 +2,7 @@
 import { model, Schema } from "mongoose";
 import { IVehicle, VehicleType } from "./vehicle.interface";
 import { User } from "../user/user.model";
-import AppError from "../../errorHelpers/AppError";
+import AppError from "../../app/errorHelpers/AppError";
 import { Role } from "../user/user.interface";
 
 

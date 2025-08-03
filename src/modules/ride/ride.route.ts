@@ -8,7 +8,7 @@ import { Role } from "../user/user.interface";
 
 const router = Router()
 
-router.post("/create",
+router.post("/book",
     validateRequest(createRideZodSchema),
     checkAuth(...Object.values(Role)),
     rideController.createRide)
@@ -22,7 +22,7 @@ router.post("/verify-otp",
     checkAuth(...Object.values(Role)),
     rideController.otpVerify)
 
-router.get("/",
+router.get("/rides",
     checkAuth(Role.ADMIN, Role.SUPER_ADMIN),
     rideController.getAllRide)
 

@@ -1,5 +1,5 @@
 import { JwtPayload } from "jsonwebtoken";
-import AppError from "../../errorHelpers/AppError";
+import AppError from "../../app/errorHelpers/AppError";
 import { Driver } from "../driver/driver.model";
 import { IRide, RIDE_STATUS } from "./ride.interface";
 import { Ride } from "./ride.model";

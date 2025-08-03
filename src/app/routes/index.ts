@@ -1,9 +1,9 @@
 import { Router } from "express";
-import { userRoutes } from "../modules/user/user.route";
-import { AuthRoutes } from "../modules/auth/auth.route";
-import { vehicleRoutes } from "../modules/vehicle/vehicle.route";
-import { driverRoutes } from "../modules/driver/driver.routes";
-import { rideRoutes } from "../modules/ride/ride.route";
+import { userRoutes } from "../../modules/user/user.route";
+import { AuthRoutes } from "../../modules/auth/auth.route";
+import { vehicleRoutes } from "../../modules/vehicle/vehicle.route";
+import { driverRoutes } from "../../modules/driver/driver.routes";
+import { rideRoutes } from "../../modules/ride/ride.route";
 
 
 export const router = Router()

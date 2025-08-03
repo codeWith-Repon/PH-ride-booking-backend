@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from "express"
-import AppError from "../errorHelpers/AppError"
+import AppError from "../app/errorHelpers/AppError"
 import { verifyToken } from "../utils/jwt"
 import { JwtPayload } from "jsonwebtoken"
 import { IsActive } from "../modules/user/user.interface"

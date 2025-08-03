@@ -1,5 +1,5 @@
 import { JwtPayload } from "jsonwebtoken";
-import AppError from "../../errorHelpers/AppError";
+import AppError from "../../app/errorHelpers/AppError";
 import { IVehicle } from "./vehicle.interface";
 import { Vehicle } from "./vehicle.model";
 import { Role } from "../user/user.interface";
