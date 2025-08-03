@@ -4,6 +4,7 @@ import { Driver } from "../driver/driver.model";
 import { IRide, RIDE_STATUS } from "./ride.interface";
 import { Ride } from "./ride.model";
 import { Role } from "../user/user.interface";
+import { DRIVER_STATUS } from "../driver/driver.interface";
 
 const createRide = async (payload: IRide, decodedToken: JwtPayload) => {
     const generateOtp = Math.floor(100000 + Math.random() * 900000)
@@ -16,6 +17,15 @@ const createRide = async (payload: IRide, decodedToken: JwtPayload) => {
 
     if (!isDriverExist) {
         throw new AppError(400, "Driver does't exist")
+    }
+
+    if ([DRIVER_STATUS.PENDING, DRIVER_STATUS.SUSPENDED].includes(isDriverExist.status)) {
+        const reason =
+            isDriverExist.status === DRIVER_STATUS.PENDING
+                ? "pending approval" :
+                "suspended"
+
+        throw new AppError(403, `Driver is ${reason} and cannot accept rides.`);
     }
 
     const checkRiderOngoingRide = await Ride.findOne({
@@ -77,6 +87,15 @@ const updateRideStatus = async (payload: Partial<IRide>, decodedToken: JwtPayloa
 
     if (!driverInfo) {
         throw new AppError(404, "Driver profile not found!")
+    }
+
+    if ([DRIVER_STATUS.PENDING, DRIVER_STATUS.SUSPENDED].includes(driverInfo.status)) {
+        const reason =
+            driverInfo.status === DRIVER_STATUS.PENDING
+                ? "pending approval" :
+                "suspended"
+
+        throw new AppError(403, `Driver is ${reason} and cannot accept rides.`);
     }
 
     const currentRide = await Ride.findOne({ driver: driverInfo._id })
