@@ -32,22 +32,22 @@ const createDriver = async (payload: IDriver) => {
     return newDriver
 }
 
-const changeDriverStatus = async (driverId: string, decodedToken: JwtPayload, payload: IDriver) => {
-    const { role } = decodedToken
+// const changeDriverStatus = async (driverId: string, decodedToken: JwtPayload, payload: IDriver) => {
+//     const { role } = decodedToken
 
-    if (role !== Role.ADMIN && role !== Role.SUPER_ADMIN) {
-        throw new AppError(403, "You are not authorize to change driver status.")
-    }
+//     if (role !== Role.ADMIN && role !== Role.SUPER_ADMIN) {
+//         throw new AppError(403, "You are not authorize to change driver status.")
+//     }
 
-    const updatedDriver = await Driver.findOneAndUpdate(
-        { user: driverId },
-        payload,
-        { new: true, runValidators: true }
-    )
+//     const updatedDriver = await Driver.findOneAndUpdate(
+//         { user: driverId },
+//         payload,
+//         { new: true, runValidators: true }
+//     )
 
-    return updatedDriver
+//     return updatedDriver
 
-}
+// }
 
 
 const updateDriver = async (driverId: string, decodedToken: JwtPayload, payload: IDriver) => {
@@ -85,7 +85,7 @@ const getSingleDriver = async (driverId: string) => {
 
 export const driverService = {
     createDriver,
-    changeDriverStatus,
+    // changeDriverStatus,
     updateDriver,
     getAllDriver,
     getSingleDriver

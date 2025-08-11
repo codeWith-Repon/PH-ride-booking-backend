@@ -4,14 +4,20 @@ import { IVehicle } from "./vehicle.interface";
 import { Vehicle } from "./vehicle.model";
 import { Role } from "../user/user.interface";
 import { deleteImageFromCloudinary } from "../../config/cloudinary.config";
+import { User } from "../user/user.model";
 
 
 const createVehicle = async (payload: IVehicle, decodedToken: JwtPayload) => {
 
     const { vehicleLicense } = payload
 
+    const isUserExist = await User.findById(decodedToken.userId)
     const isVehicleExist = await Vehicle.findOne({ vehicleLicense })
 
+
+    if (isUserExist) {
+        throw new AppError(400, "User already has a vehicle!");
+    }
 
     if (isVehicleExist) {
         throw new AppError(400, "Vehicle already registered!!");

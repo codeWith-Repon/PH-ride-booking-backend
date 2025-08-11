@@ -11,13 +11,12 @@ const router = Router()
 
 router.post(
     "/register-user",
-    multerUpload.single("file"),
     validateRequest(createUserZodSchema),
     UserController.createUser
 )
 
 router.get(
-    "/all-user",
+    "/users",
     checkAuth(Role.ADMIN, Role.SUPER_ADMIN),
     UserController.getAllUser
 )
@@ -33,9 +32,9 @@ router.get(
 )
 router.patch(
     "/:userId",
+    checkAuth(...Object.values(Role)),
     multerUpload.single("file"),
     validateRequest(updateUserZodSchema),
-    checkAuth(...Object.values(Role)),
     UserController.updateUser
 )
 

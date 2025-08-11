@@ -20,21 +20,21 @@ const createDriver = catchAsync(async (req: Request, res: Response, next: NextFu
     })
 })
 
-const changeDriverStatus = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+// const changeDriverStatus = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
 
-    const payload = req.body as IDriver
-    const { driverId } = req.params
-    const decodedToken = req.user as JwtPayload
+//     const payload = req.body as IDriver
+//     const { driverId } = req.params
+//     const decodedToken = req.user as JwtPayload
 
-    const result = await driverService.changeDriverStatus(driverId, decodedToken, payload)
+//     const result = await driverService.changeDriverStatus(driverId, decodedToken, payload)
 
-    sendResponse(res, {
-        success: true,
-        statusCode: 201,
-        message: "Driver Status Change Successful",
-        data: result
-    })
-})
+//     sendResponse(res, {
+//         success: true,
+//         statusCode: 201,
+//         message: "Driver Status Change Successful",
+//         data: result
+//     })
+// })
 
 const updateDriver = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
     const driverId = req.params.driverId
@@ -78,7 +78,7 @@ const getSingleDriver = catchAsync(async (req: Request, res: Response, next: Nex
 
 export const driverController = {
     createDriver,
-    changeDriverStatus,
+    // changeDriverStatus,
     updateDriver,
     getAllDriver,
     getSingleDriver

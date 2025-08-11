@@ -2,9 +2,12 @@ import z from "zod";
 import { VehicleType } from "./vehicle.interface";
 
 export const createVehicleZodSchema = z.object({
-    // driver: z.string(),
+    driver: z.string(),
     vehicleType: z
-        .enum(Object.values(VehicleType) as string[], { message: "Invalid vehicle type" }),
+        .string( "Vehicle type is required")
+        .refine((val) => Object.values(VehicleType).includes(val as VehicleType), {
+            message: "Invalid vehicle type",
+        }).optional(),
     brand: z
         .string()
         .min(2, "Brand must be at least 2 characters")

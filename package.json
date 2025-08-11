@@ -4,7 +4,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "start": "node dist/server.js",
     "dev": "ts-node-dev --respawn --transpile-only ./src/server.ts",
+    "build": "tsc",
     "lint": "npx eslint ./src",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -13,11 +15,8 @@
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
-    "@types/bcryptjs": "^2.4.6",
-    "@types/multer": "^2.0.0",
-    "@types/passport-google-oauth20": "^2.0.16",
     "bcryptjs": "^3.0.2",
-    "cloudinary": "^2.7.0",
+    "cloudinary": "^1.21.0",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
     "dotenv": "^17.2.1",
@@ -33,6 +32,9 @@
     "zod": "^4.0.11"
   },
   "devDependencies": {
+    "@types/bcryptjs": "^2.4.6",
+    "@types/multer": "^2.0.0",
+    "@types/passport-google-oauth20": "^2.0.16",
     "@eslint/js": "^9.32.0",
     "@types/cookie-parser": "^1.4.9",
     "@types/cors": "^2.8.19",
