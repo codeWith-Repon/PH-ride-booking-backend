@@ -1,5 +1,5 @@
 import { JwtPayload } from "jsonwebtoken";
-import AppError from "../../app/errorHelpers/AppError";
+import AppError from "../../errorHelpers/AppError";
 import { IDriver } from "./driver.interface";
 import { Driver } from "./driver.model";
 import { Role } from "../user/user.interface";

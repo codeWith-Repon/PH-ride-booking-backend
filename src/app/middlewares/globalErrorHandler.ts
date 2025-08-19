@@ -4,12 +4,12 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextFunction, Request, Response } from "express";
 import { envVars } from "../config/env";
-import AppError from "../app/errorHelpers/AppError";
-import { handleDuplicateError } from "../app/helpers/handleDuplicateError";
-import { handleCastError } from "../app/helpers/handleCastError";
-import { handleZodError } from "../app/helpers/handleZodError";
-import { handleValidationError } from "../app/helpers/handleValidationError";
-import { TErrorSources } from "../app/interfaces/error.types";
+import AppError from "../errorHelpers/AppError";
+import { handleDuplicateError } from "../helpers/handleDuplicateError";
+import { handleCastError } from "../helpers/handleCastError";
+import { handleZodError } from "../helpers/handleZodError";
+import { handleValidationError } from "../helpers/handleValidationError";
+import { TErrorSources } from "../interfaces/error.types";
 import { deleteImageFromCloudinary } from "../config/cloudinary.config";
 
 
