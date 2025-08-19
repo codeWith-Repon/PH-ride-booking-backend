@@ -4,6 +4,7 @@ import AppError from "../../errorHelpers/AppError";
 import { IAuthProvider, IUser, Role } from "./user.interface";
 import { User } from "./user.model";
 import bcryptjs from "bcryptjs"
+import { deleteImageFromCloudinary } from "../../config/cloudinary.config";
 
 const createUser = async (payload: Partial<IUser>) => {
     const { email, password, phone, ...rest } = payload
@@ -74,6 +75,11 @@ const updateUser = async (payload: IUser, decodedToken: JwtPayload) => {
 
     if (payload.password) {
         payload.password = await bcryptjs.hash(payload.password, Number(envVars.BCRYPT_SALT_ROUND))
+    }
+
+    if (payload.image) {
+        const existUser = await User.findById(decodedToken.userId)
+        await deleteImageFromCloudinary(existUser?.image as string)
     }
 
     const updatedUser = await User.findByIdAndUpdate(decodedToken.userId, payload, { new: true, runValidators: true })
