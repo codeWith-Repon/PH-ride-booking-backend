@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 import { JwtPayload } from "jsonwebtoken";
 import AppError from "../../errorHelpers/AppError";
@@ -133,11 +134,30 @@ const forgotPassword = async (email: string) => {
     })
 }
 
+const resetPassword = async (payload: Record<string, any>, decodedToken: JwtPayload) => {
+    if (payload.id != decodedToken.userId) {
+        throw new AppError(401, "You can not reset your password")
+    }
+
+    const isUserExist = await User.findById(decodedToken.userId)
+
+    if (!isUserExist) {
+        throw new AppError(400, "User does not exist")
+    }
+
+    const hashedPassword = await bcryptjs.hash(payload.newPassword, Number(envVars.BCRYPT_SALT_ROUND))
+
+    isUserExist.password = hashedPassword
+
+    await isUserExist.save()
+}
+
 
 export const AuthService = {
     // credentialsLogin,
     setPassword,
     getNewAccessToken,
     changePassword,
-    forgotPassword
+    forgotPassword,
+    resetPassword
 }
