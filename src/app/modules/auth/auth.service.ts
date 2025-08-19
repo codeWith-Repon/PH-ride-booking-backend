@@ -5,6 +5,7 @@ import { createNewAccessTokenWithRefreshToken } from "../../utils/userToken";
 import { User } from "../user/user.model";
 import bcryptjs from "bcryptjs"
 import { envVars } from "../../config/env";
+import { IAuthProvider } from "../user/user.interface";
 
 
 // const credentialsLogin = async (payload: Partial<IUser>) => {
@@ -43,6 +44,29 @@ const getNewAccessToken = async (refreshToken: string) => {
     }
 }
 
+const setPassword = async (plainPassword: string, decodedToken: JwtPayload) => {
+    const user = await User.findById(decodedToken.userId)
+
+    if (user?.password && user.auths.some(provider => provider.provider === "google")) {
+        throw new AppError(400, "You have already set your password. Now you can change you Password from your profile password update.");
+    }
+
+    const hashedPassword = await bcryptjs.hash(plainPassword, Number(envVars.BCRYPT_SALT_ROUND))
+
+    const credentialsProvider: IAuthProvider = {
+        provider: "credentials",
+        providerId: user?.email as string
+    }
+
+    const auths: IAuthProvider[] = [...user!.auths, credentialsProvider]
+
+    user!.password = hashedPassword
+
+    user!.auths = auths
+
+    user!.save()
+}
+
 const changePassword = async (oldPassword: string, newPassword: string, decodedToken: JwtPayload) => {
 
     const user = await User.findById(decodedToken.userId)
@@ -62,6 +86,7 @@ const changePassword = async (oldPassword: string, newPassword: string, decodedT
 
 export const AuthService = {
     // credentialsLogin,
+    setPassword,
     getNewAccessToken,
     changePassword
 }
