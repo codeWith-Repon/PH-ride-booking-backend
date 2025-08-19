@@ -4,7 +4,7 @@ import passport from "passport";
 import { Strategy as GoogleStrategy, Profile, VerifyCallback } from "passport-google-oauth20";
 import { envVars } from "./env";
 import { User } from "../modules/user/user.model";
-import { Role } from "../modules/user/user.interface";
+import { IsActive, Role } from "../modules/user/user.interface";
 import { Strategy as LocalStrategy } from "passport-local";
 import bcryptjs from "bcryptjs"
 
@@ -19,6 +19,18 @@ passport.use(
 
             if (!isUserExist) {
                 return done(null, false, { message: "User dos not exist" })
+            }
+
+            if (!isUserExist.isVerified) {
+                return done("User not verified!")
+            }
+
+            if (isUserExist.isActive === IsActive.BLOCKED || isUserExist.isActive === IsActive.INACTIVE) {
+                return done(`User is ${isUserExist.isActive}`)
+            }
+
+            if (isUserExist.isDeleted) {
+                return done("User is deleted!")
             }
 
             const isGoogleAuthenticated = isUserExist.auths.some(providerObjects => providerObjects.provider == "google")

@@ -136,6 +136,17 @@ const changePassword = catchAsync(async (req: Request, res: Response, next: Next
     })
 })
 
+const forgetPassword = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+    const { email } = req.body
+    await AuthService.forgotPassword(email)
+    sendResponse(res, {
+        success: true,
+        statusCode: 200,
+        message: "Password Reset Link Sent Successfully",
+        data: null
+    })
+})
+
 const googleCallbackController = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
 
     let redirectTo = req.query.state ? req.query.state as string : ""
@@ -162,5 +173,6 @@ export const AuthController = {
     logOut,
     setPassword,
     changePassword,
+    forgetPassword,
     googleCallbackController
 }

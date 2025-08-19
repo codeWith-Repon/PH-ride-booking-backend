@@ -23,9 +23,6 @@ export const checkAuth = (...authRoles: string[]) => async (req: Request, res: R
             throw new AppError(400, "User does't exit")
         }
 
-        // if (!isUserExist.isVerified) {
-        //     throw new AppError(400, "User is not verified!")
-        // }
 
         if (isUserExist.isActive === IsActive.BLOCKED || isUserExist.isActive === IsActive.INACTIVE) {
             throw new AppError(400, `User is ${isUserExist.isActive}!`)
@@ -33,6 +30,10 @@ export const checkAuth = (...authRoles: string[]) => async (req: Request, res: R
 
         if (isUserExist.isDeleted) {
             throw new AppError(400, `User is deleted!`)
+        }
+
+        if (!isUserExist.isVerified) {
+            throw new AppError(400, "User is not verified!")
         }
 
         if (!authRoles.includes(verifiedToken.role)) {

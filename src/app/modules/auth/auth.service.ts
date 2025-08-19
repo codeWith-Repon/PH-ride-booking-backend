@@ -5,7 +5,9 @@ import { createNewAccessTokenWithRefreshToken } from "../../utils/userToken";
 import { User } from "../user/user.model";
 import bcryptjs from "bcryptjs"
 import { envVars } from "../../config/env";
-import { IAuthProvider } from "../user/user.interface";
+import { IAuthProvider, IsActive } from "../user/user.interface";
+import jwt from "jsonwebtoken"
+import { sendEmail } from "../../utils/sendEmail";
 
 
 // const credentialsLogin = async (payload: Partial<IUser>) => {
@@ -77,10 +79,58 @@ const changePassword = async (oldPassword: string, newPassword: string, decodedT
         throw new AppError(401, "Old Password does not match")
     }
 
+    const isSameAsOld = await bcryptjs.compare(newPassword, user?.password as string)
+
+    if (isSameAsOld) {
+        throw new AppError(400, "New password can not be same as old password")
+    }
+
     user!.password = await bcryptjs.hash(newPassword, Number(envVars.BCRYPT_SALT_ROUND))
 
     user!.save()
 
+}
+
+const forgotPassword = async (email: string) => {
+    const isUserExist = await User.findOne({ email })
+
+    if (!isUserExist) {
+        throw new AppError(400, "User does not exist")
+    }
+
+    if (!isUserExist.isVerified) {
+        throw new AppError(400, "User is not verified")
+    }
+
+    if (isUserExist.isActive === IsActive.BLOCKED || isUserExist.isActive === IsActive.INACTIVE) {
+        throw new AppError(400, `User is ${isUserExist.isActive}`)
+    }
+
+    if (isUserExist.isDeleted) {
+        throw new AppError(400, "User is deleted")
+    }
+
+    const JwtPayload = {
+        userId: isUserExist._id,
+        email: isUserExist.email,
+        role: isUserExist.role
+    }
+
+    const resetToken = jwt.sign(JwtPayload, envVars.JWT_ACCESS_SECRET, {
+        expiresIn: "10m"
+    })
+
+    const resetUILink = `${envVars.FRONTEND_URL}/reset-password?id=${isUserExist._id}&token=${resetToken}`
+
+    sendEmail({
+        to: isUserExist.email,
+        subject: "Password Reset",
+        templateName: "forgetPassword",
+        templateData: {
+            name: isUserExist.name,
+            resetUILink
+        }
+    })
 }
 
 
@@ -88,5 +138,6 @@ export const AuthService = {
     // credentialsLogin,
     setPassword,
     getNewAccessToken,
-    changePassword
+    changePassword,
+    forgotPassword
 }
