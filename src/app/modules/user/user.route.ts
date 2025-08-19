@@ -31,7 +31,7 @@ router.get(
     UserController.getSingleUser
 )
 router.patch(
-    "/:userId",
+    "/update",
     checkAuth(...Object.values(Role)),
     multerUpload.single("file"),
     validateRequest(updateUserZodSchema),

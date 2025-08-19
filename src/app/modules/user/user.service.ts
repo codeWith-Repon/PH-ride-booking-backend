@@ -46,9 +46,7 @@ const getSingleUser = async (userId: string) => {
     const user = User.findById(userId).select("-password");
     return user
 }
-const updateUser = async (userId: string, payload: IUser, decodedToken: JwtPayload) => {
-
-    // const isUserExist = User.findById(userId)
+const updateUser = async (payload: IUser, decodedToken: JwtPayload) => {
 
     if (payload.role) {
         if (
@@ -78,7 +76,7 @@ const updateUser = async (userId: string, payload: IUser, decodedToken: JwtPaylo
         payload.password = await bcryptjs.hash(payload.password, Number(envVars.BCRYPT_SALT_ROUND))
     }
 
-    const updatedUser = await User.findByIdAndUpdate(userId, payload, { new: true, runValidators: true })
+    const updatedUser = await User.findByIdAndUpdate(decodedToken.userId, payload, { new: true, runValidators: true })
 
     if (!updatedUser) {
         throw new AppError(500, "Failed to update user");

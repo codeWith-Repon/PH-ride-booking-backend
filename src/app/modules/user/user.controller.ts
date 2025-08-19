@@ -50,10 +50,9 @@ const getSingleUser = catchAsync(async (req: Request, res: Response, next: NextF
 
 const updateUser = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
 
-    const { userId } = req.params
     const payload: IUser = { ...req.body, image: req.file?.path }
     const decodedToken = req.user
-    const result = await UserServices.updateUser(userId, payload, decodedToken as JwtPayload)
+    const result = await UserServices.updateUser(payload, decodedToken as JwtPayload)
 
     sendResponse(res, {
         success: true,
