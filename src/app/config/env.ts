@@ -31,7 +31,11 @@ interface EnvConfig {
         SMTP_USER: string,
         SMTP_PASS: string,
         SMTP_FROM: string
-    }
+    },
+    REDIS_HOST: string,
+    REDIS_PORT: string,
+    REDIS_USERNAME: string,
+    REDIS_PASSWORD: string
 }
 
 const loadEnvVariables = (): EnvConfig => {
@@ -58,7 +62,11 @@ const loadEnvVariables = (): EnvConfig => {
         "SMTP_PORT",
         "SMTP_USER",
         "SMTP_PASS",
-        "SMTP_FROM"
+        "SMTP_FROM",
+        "REDIS_HOST",
+        "REDIS_PORT",
+        "REDIS_USERNAME",
+        "REDIS_PASSWORD"
     ]
 
     requiredEnvVariables.forEach(key => {
@@ -94,7 +102,11 @@ const loadEnvVariables = (): EnvConfig => {
             SMTP_USER: process.env.SMTP_USER!,
             SMTP_PASS: process.env.SMTP_PASS!,
             SMTP_FROM: process.env.SMTP_FROM!
-        }
+        },
+        REDIS_HOST: process.env.REDIS_HOST!,
+        REDIS_PORT: process.env.REDIS_PORT!,
+        REDIS_USERNAME: process.env.REDIS_USERNAME!,
+        REDIS_PASSWORD: process.env.REDIS_PASSWORD!
     }
 }
 
