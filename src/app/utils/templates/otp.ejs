@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="x-ua-compatible" content="ie=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="x-apple-disable-message-reformatting" />
+    <title>Verify your OTP</title>
+    <style>
+      :root {
+        color-scheme: light dark;
+      }
+      body {
+        margin: 0;
+        padding: 0;
+        background: #f4f5f7;
+      }
+      .bg {
+        background: #f4f5f7;
+      }
+      .container {
+        width: 100%;
+      }
+      .content {
+        max-width: 600px;
+        margin: 0 auto;
+      }
+      .card {
+        background: #ffffff;
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 6px 24px rgba(34, 43, 69, 0.08);
+      }
+      .header {
+        background: #0f172a;
+        padding: 24px 24px;
+      }
+      .brand {
+        color: #ffffff;
+        font: 600 18px/1.2 -apple-system, BlinkMacSystemFont, Segoe UI, Roboto,
+          Helvetica, Arial, 'Apple Color Emoji', 'Segoe UI Emoji';
+        letter-spacing: 0.3px;
+      }
+      .hero {
+        padding: 28px 28px 8px 28px;
+        font: 600 22px/1.25 -apple-system, BlinkMacSystemFont, Segoe UI, Roboto,
+          Helvetica, Arial;
+        color: #0f172a;
+      }
+      .body {
+        padding: 0 28px 24px 28px;
+        font: 400 16px/1.65 -apple-system, BlinkMacSystemFont, Segoe UI, Roboto,
+          Helvetica, Arial;
+        color: #334155;
+      }
+      .otp-wrap {
+        padding: 16px 28px 8px 28px;
+      }
+      .otp {
+        font: 700 28px/1.2 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+          'Liberation Mono', 'Courier New', monospace;
+        letter-spacing: 6px;
+        color: #0f172a;
+        background: #f1f5f9;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        padding: 18px 22px;
+        text-align: center;
+      }
+      .btn-wrap {
+        padding: 12px 28px 28px 28px;
+        text-align: center;
+      }
+      .btn {
+        display: inline-block;
+        text-decoration: none;
+        background: #2563eb;
+        color: #ffffff !important;
+        padding: 14px 22px;
+        border-radius: 9999px;
+        font: 600 16px/1 -apple-system, BlinkMacSystemFont, Segoe UI, Roboto,
+          Helvetica, Arial;
+      }
+      .meta {
+        padding: 0 28px 28px 28px;
+        color: #64748b;
+        font: 400 13px/1.6 -apple-system, BlinkMacSystemFont, Segoe UI, Roboto,
+          Helvetica, Arial;
+      }
+      .footer {
+        text-align: center;
+        color: #94a3b8;
+        font: 400 12px/1.6 -apple-system, BlinkMacSystemFont, Segoe UI, Roboto,
+          Helvetica, Arial;
+        padding: 20px 10px 40px;
+      }
+      @media (prefers-color-scheme: dark) {
+        body,
+        .bg {
+          background: #0b1020 !important;
+        }
+        .card {
+          background: #0f172a !important;
+          box-shadow: none;
+        }
+        .hero {
+          color: #e5e7eb !important;
+        }
+        .body {
+          color: #cbd5e1 !important;
+        }
+        .otp {
+          color: #e5e7eb !important;
+          background: #0b1220 !important;
+          border-color: #1f2937 !important;
+        }
+        .btn {
+          background: #3b82f6 !important;
+        }
+        .meta {
+          color: #94a3b8 !important;
+        }
+        .footer {
+          color: #64748b !important;
+        }
+        .header {
+          background: #0b1220 !important;
+        }
+      }
+      /* Mobile spacing tweaks */
+      @media screen and (max-width: 600px) {
+        .hero {
+          font-size: 20px !important;
+          padding: 22px 18px 6px 18px !important;
+        }
+        .body {
+          padding: 0 18px 18px 18px !important;
+        }
+        .otp-wrap {
+          padding: 14px 18px 6px 18px !important;
+        }
+        .btn-wrap {
+          padding: 8px 18px 22px 18px !important;
+        }
+        .meta {
+          padding: 0 18px 18px 18px !important;
+        }
+      }
+    </style>
+  </head>
+  <body class="bg">
+    <table
+      role="presentation"
+      cellspacing="0"
+      cellpadding="0"
+      border="0"
+      align="center"
+      width="100%"
+      class="container"
+    >
+      <tr>
+        <td style="padding: 24px">
+          <table
+            role="presentation"
+            cellspacing="0"
+            cellpadding="0"
+            border="0"
+            width="100%"
+            class="content"
+          >
+            <tr>
+              <td class="card">
+                <!-- Hero / Greeting -->
+                <table
+                  role="presentation"
+                  width="100%"
+                  cellspacing="0"
+                  cellpadding="0"
+                  border="0"
+                >
+                  <tr>
+                    <td class="hero">Hello <%= name %> 👋</td>
+                  </tr>
+                  <tr>
+                    <td class="body">
+                      Use the One-Time Password (OTP) below to continue your
+                      sign‑in.
+                    </td>
+                  </tr>
+                </table>
+
+                <!-- OTP Code -->
+                <table
+                  role="presentation"
+                  width="100%"
+                  cellspacing="0"
+                  cellpadding="0"
+                  border="0"
+                >
+                  <tr>
+                    <td class="otp-wrap">
+                      <div class="otp"><%= otp %></div>
+                    </td>
+                  </tr>
+                </table>
+                <table
+                  role="presentation"
+                  width="100%"
+                  cellspacing="0"
+                  cellpadding="0"
+                  border="0"
+                >
+                  <tr>
+                    <td class="meta">
+                      This code is valid for <strong>2 minutes</strong>. Do not
+                      share this code with anyone. If you didn’t request this,
+                      you can safely ignore this email.
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>
