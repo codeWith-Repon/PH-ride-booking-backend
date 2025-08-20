@@ -21,53 +21,53 @@ const createRide = async (payload: IRide, decodedToken: JwtPayload) => {
     const { driver } = payload
     const { userId } = decodedToken
 
-
-    const isDriverExist = await Driver.findById(driver)
-
-    if (!isDriverExist) {
-        throw new AppError(400, "Driver does't exist")
-    }
-
-    if ([DRIVER_STATUS.PENDING, DRIVER_STATUS.SUSPENDED].includes(isDriverExist.status)) {
-        const reason =
-            isDriverExist.status === DRIVER_STATUS.PENDING
-                ? "pending approval" :
-                "suspended"
-
-        throw new AppError(403, `Driver is ${reason} and cannot accept rides.`);
-    }
-
-    const checkRiderOngoingRide = await Ride.findOne({
-        user: userId,
-        status: {
-            $in: [RIDE_STATUS.ACCEPTED, RIDE_STATUS.PICKED_UP, RIDE_STATUS.IN_TRANSIT]
-        }
-    })
-
-    if (checkRiderOngoingRide) {
-        throw new AppError(400, "You already have an ongoing ride")
-    }
-
-    const checkDriverOngoingRide = await Ride.findOne({
-        driver,
-        status: {
-            $in: [RIDE_STATUS.ACCEPTED, RIDE_STATUS.PICKED_UP, RIDE_STATUS.IN_TRANSIT]
-        }
-    })
-
-    if (checkDriverOngoingRide) {
-        throw new AppError(400, "Driver is currently on another ride")
-    }
-    const alreadyRequestedUser = await Ride.findOne({ user: userId, rideStatus: RIDE_STATUS.REQUESTED })
-    if (alreadyRequestedUser) {
-        throw new AppError(400, "You are already sent request")
-    }
-
     const session = await mongoose.startSession()
 
     session.startTransaction()
 
     try {
+        const isDriverExist = await Driver.findById(driver)
+
+        if (!isDriverExist) {
+            throw new AppError(400, "Driver does't exist")
+        }
+
+        if ([DRIVER_STATUS.PENDING, DRIVER_STATUS.SUSPENDED].includes(isDriverExist.status)) {
+            const reason =
+                isDriverExist.status === DRIVER_STATUS.PENDING
+                    ? "pending approval" :
+                    "suspended"
+
+            throw new AppError(403, `Driver is ${reason} and cannot accept rides.`);
+        }
+
+        const checkRiderOngoingRide = await Ride.findOne({
+            user: userId,
+            status: {
+                $in: [RIDE_STATUS.ACCEPTED, RIDE_STATUS.PICKED_UP, RIDE_STATUS.IN_TRANSIT]
+            }
+        })
+
+        if (checkRiderOngoingRide) {
+            throw new AppError(400, "You already have an ongoing ride")
+        }
+
+        const checkDriverOngoingRide = await Ride.findOne({
+            driver,
+            status: {
+                $in: [RIDE_STATUS.ACCEPTED, RIDE_STATUS.PICKED_UP, RIDE_STATUS.IN_TRANSIT]
+            }
+        })
+
+        if (checkDriverOngoingRide) {
+            throw new AppError(400, "Driver is currently on another ride")
+        }
+        const alreadyRequestedUser = await Ride.findOne({ user: userId, rideStatus: RIDE_STATUS.REQUESTED })
+        if (alreadyRequestedUser) {
+            throw new AppError(400, "You are already sent request")
+        }
+
+
 
         payload.rideOtp = generateOtp
         payload.user = userId
@@ -94,7 +94,7 @@ const createRide = async (payload: IRide, decodedToken: JwtPayload) => {
         return updatedBooking
 
     } catch (error) {
-        session.abortTransaction()
+       await session.abortTransaction()
         throw error
     } finally {
         session.endSession()
