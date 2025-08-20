@@ -13,7 +13,7 @@ const paymentSchema = new Schema<IPayment>({
         required: true,
         unique: true
     },
-    paymentStatus: {
+    status: {
         type: String,
         enum: Object.values(PAYMENT_STATUS),
         default: PAYMENT_STATUS.UNPAID

@@ -5,9 +5,17 @@ import { IRide, RIDE_STATUS } from "./ride.interface";
 import { Ride } from "./ride.model";
 import { Role } from "../user/user.interface";
 import { DRIVER_STATUS } from "../driver/driver.interface";
+import { Payment } from "../payment/payment.model";
+import { PAYMENT_STATUS } from "../payment/payment.interface";
+
+
+const getTransactionId = () => {
+    return `tran_${Date.now()}_${Math.floor(Math.random() * 1000)}`
+}
 
 const createRide = async (payload: IRide, decodedToken: JwtPayload) => {
     const generateOtp = Math.floor(100000 + Math.random() * 900000)
+    const transactionId = getTransactionId()
 
     const { driver } = payload
     const { userId } = decodedToken
@@ -57,7 +65,24 @@ const createRide = async (payload: IRide, decodedToken: JwtPayload) => {
     payload.user = userId
     const ride = await Ride.create(payload)
 
-    return ride
+    const payment = await Payment.create({
+        ride: ride._id,
+        status: PAYMENT_STATUS.UNPAID,
+        transactionId: transactionId,
+        amount: ride.fare
+    })
+
+    const updatedBooking = await Ride
+        .findByIdAndUpdate(
+            ride._id,
+            { payment: payment._id },
+            { new: true, runValidators: true }
+        )
+        .populate("user", "name email phone ")
+        .populate("driver")
+        .populate("payment")
+
+    return updatedBooking
 }
 
 const updateRideStatus = async (payload: Partial<IRide>, decodedToken: JwtPayload) => {
