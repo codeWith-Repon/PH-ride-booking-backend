@@ -127,15 +127,28 @@ const updateRideStatus = async (payload: Partial<IRide>, decodedToken: JwtPayloa
         throw new AppError(403, "Completed rides cannot be modified.");
     }
 
-    if (payload.rideStatus === RIDE_STATUS.ACCEPTED) {
+    if (payload.rideStatus === RIDE_STATUS.ACCEPTED || payload.fare !== undefined) {
         const existingAcceptedRideForDriver = await Ride.findOne({
-            driver: driverInfo._id,
-            status: RIDE_STATUS.ACCEPTED,
+            driver: driverInfo._id
         });
 
-        if (existingAcceptedRideForDriver) {
+        if (!existingAcceptedRideForDriver) {
+            throw new AppError(400, "No ongoing ride found for driver");
+        }
+
+        if (existingAcceptedRideForDriver && existingAcceptedRideForDriver.rideStatus === RIDE_STATUS.ACCEPTED) {
             throw new AppError(400, "You already have an accepted ride. Complete it before accepting a new one.");
         }
+
+        if (payload.fare) {
+            existingAcceptedRideForDriver.fare = payload.fare
+            await existingAcceptedRideForDriver.save()
+        }
+
+        if (!existingAcceptedRideForDriver.fare) {
+            throw new AppError(400, "Fare is not set for this ride. Please set the fare before accepting the ride.");
+        }
+
         payload.rideStatus = RIDE_STATUS.ACCEPTED
     }
 

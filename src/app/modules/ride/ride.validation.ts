@@ -27,7 +27,6 @@ export const updateRideZodSchema = z.object({
         .max(999999)
         .optional(), // 6-digit OTP
     isOtpVerified: z.boolean().optional(),
-    estimatedTime: z.string().optional(),
     startedAt: z
         .string()
         .refine((val) => !isNaN(Date.parse(val)), {
@@ -43,5 +42,6 @@ export const updateRideZodSchema = z.object({
 });
 
 export const updateRideStatusZodSchema = z.object({
-    rideStatus: z.enum(RIDE_STATUS)
+    rideStatus: z.enum(RIDE_STATUS).optional(),
+    fare: z.number().positive().optional(),
 })

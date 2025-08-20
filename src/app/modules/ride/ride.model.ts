@@ -17,7 +17,7 @@ const rideSchema = new Schema<IRide>({
     payment: {
         type: Schema.Types.ObjectId,
         ref: "Payment",
-        default: null
+        // default: null
     },
     pickupLocation: {
         type: String,
