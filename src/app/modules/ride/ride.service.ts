@@ -7,6 +7,7 @@ import { Role } from "../user/user.interface";
 import { DRIVER_STATUS } from "../driver/driver.interface";
 import { Payment } from "../payment/payment.model";
 import { PAYMENT_STATUS } from "../payment/payment.interface";
+import mongoose from "mongoose";
 
 
 const getTransactionId = () => {
@@ -61,28 +62,43 @@ const createRide = async (payload: IRide, decodedToken: JwtPayload) => {
     if (alreadyRequestedUser) {
         throw new AppError(400, "You are already sent request")
     }
-    payload.rideOtp = generateOtp
-    payload.user = userId
-    const ride = await Ride.create(payload)
 
-    const payment = await Payment.create({
-        ride: ride._id,
-        status: PAYMENT_STATUS.UNPAID,
-        transactionId: transactionId,
-        amount: ride.fare
-    })
+    const session = await mongoose.startSession()
 
-    const updatedBooking = await Ride
-        .findByIdAndUpdate(
-            ride._id,
-            { payment: payment._id },
-            { new: true, runValidators: true }
-        )
-        .populate("user", "name email phone ")
-        .populate("driver")
-        .populate("payment")
+    session.startTransaction()
 
-    return updatedBooking
+    try {
+
+        payload.rideOtp = generateOtp
+        payload.user = userId
+        const ride = await Ride.create([payload], { session })
+
+        const payment = await Payment.create([{
+            ride: ride[0]._id,
+            status: PAYMENT_STATUS.UNPAID,
+            transactionId: transactionId,
+            amount: ride[0].fare
+        }], { session })
+
+        const updatedBooking = await Ride
+            .findByIdAndUpdate(
+                ride[0]._id,
+                { payment: payment[0]._id },
+                { new: true, runValidators: true, session }
+            )
+            .populate("user", "name email phone ")
+            .populate("driver")
+            .populate("payment")
+
+        await session.commitTransaction()
+        return updatedBooking
+
+    } catch (error) {
+        session.abortTransaction()
+        throw error
+    } finally {
+        session.endSession()
+    }
 }
 
 const updateRideStatus = async (payload: Partial<IRide>, decodedToken: JwtPayload) => {
