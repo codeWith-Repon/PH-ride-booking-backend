@@ -15,7 +15,7 @@ export const updateRideZodSchema = z.object({
     pickupLocation: z.string().optional(),
     dropLocation: z.string().optional(),
     distance: z.number().optional(),
-    status: z
+    rideStatus: z
         .enum(Object.values(RIDE_STATUS) as [string])
         .optional(),
     fare: z.number().positive().optional(),
@@ -43,5 +43,5 @@ export const updateRideZodSchema = z.object({
 });
 
 export const updateRideStatusZodSchema = z.object({
-    status: z.enum(RIDE_STATUS)
+    rideStatus: z.enum(RIDE_STATUS)
 })
