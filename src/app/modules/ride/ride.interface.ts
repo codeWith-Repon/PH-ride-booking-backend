@@ -1,4 +1,5 @@
 import { Types } from "mongoose";
+import { PAYMENT_STATUS } from "../payment/payment.interface";
 
 
 export enum RIDE_STATUS {
@@ -11,12 +12,6 @@ export enum RIDE_STATUS {
     CANCELLED = "CANCELLED"
 }
 
-export enum PAYMENT_STATUS {
-    PENDING = "PENDING",
-    CANCEL = "CANCEL",
-    COMPLETE = "COMPLETE",
-    FAILED = "FAILED"
-}
 
 export interface IRide {
     user: Types.ObjectId;

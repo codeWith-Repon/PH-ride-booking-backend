@@ -1,5 +1,6 @@
 import { model, Schema } from "mongoose";
-import { IRide, PAYMENT_STATUS, RIDE_STATUS } from "./ride.interface";
+import { IRide, RIDE_STATUS } from "./ride.interface";
+import { PAYMENT_STATUS } from "../payment/payment.interface";
 
 
 const rideSchema = new Schema<IRide>({
@@ -34,7 +35,7 @@ const rideSchema = new Schema<IRide>({
     paymentStatus: {
         type: String,
         enum: Object.values(PAYMENT_STATUS),
-        default: PAYMENT_STATUS.PENDING
+        default: PAYMENT_STATUS.UNPAID
     },
     fare: {
         type: Number,
