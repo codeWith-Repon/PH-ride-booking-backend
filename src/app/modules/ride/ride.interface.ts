@@ -1,4 +1,5 @@
 import { Types } from "mongoose";
+// import { PAYMENT_STATUS } from "../payment/payment.interface";
 
 
 export enum RIDE_STATUS {
@@ -11,13 +12,15 @@ export enum RIDE_STATUS {
     CANCELLED = "CANCELLED"
 }
 
+
 export interface IRide {
     user: Types.ObjectId;
     driver: Types.ObjectId;
     payment?: Types.ObjectId;
     pickupLocation: string;
     dropLocation: string;
-    status: RIDE_STATUS;
+    rideStatus: RIDE_STATUS;
+    // paymentStatus: PAYMENT_STATUS;
     fare: number;
     distance?: number;
     rideOtp: number;
