@@ -36,7 +36,6 @@ const userSchema = new Schema<IUser>({
     },
     phone: {
         type: String,
-        unique: true
     },
     address: {
         type: String

@@ -4,22 +4,15 @@ import AppError from "../../errorHelpers/AppError";
 import { IAuthProvider, IUser, Role } from "./user.interface";
 import { User } from "./user.model";
 import bcryptjs from "bcryptjs"
-import { deleteImageFromCloudinary } from "../../config/cloudinary.config";
+// import { deleteImageFromCloudinary } from "../../config/cloudinary.config";
 
 const createUser = async (payload: Partial<IUser>) => {
-    const { email, password, phone, ...rest } = payload
+    const { email, password, ...rest } = payload
 
     const isUserExist = await User.findOne({ email });
 
     if (isUserExist) {
         throw new AppError(400, "User Already Exist!!");
-    }
-
-    if (phone) {
-        const isPhoneExist = await User.findOne({ phone });
-        if (isPhoneExist) {
-            throw new AppError(400, "Phone Already Exist!!");
-        }
     }
 
     const hashedPassword = await bcryptjs.hash(password as string, Number(envVars.BCRYPT_SALT_ROUND))
@@ -29,7 +22,6 @@ const createUser = async (payload: Partial<IUser>) => {
     const user = await User.create({
         email,
         password: hashedPassword,
-        phone,
         auths: [authProvider],
         ...rest
     })
@@ -77,10 +69,10 @@ const updateUser = async (payload: IUser, decodedToken: JwtPayload) => {
         payload.password = await bcryptjs.hash(payload.password, Number(envVars.BCRYPT_SALT_ROUND))
     }
 
-    if (payload.image) {
-        const existUser = await User.findById(decodedToken.userId)
-        await deleteImageFromCloudinary(existUser?.image as string)
-    }
+    // if (payload.image) {
+    //     const existUser = await User.findById(decodedToken.userId)
+    //     await deleteImageFromCloudinary(existUser?.image as string)
+    // }
 
     const updatedUser = await User.findByIdAndUpdate(decodedToken.userId, payload, { new: true, runValidators: true })
 

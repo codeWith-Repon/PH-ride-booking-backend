@@ -16,7 +16,7 @@ router.post("/register",
     vehicleController.createVehicle)
 
 router.get("/vehicles",
-    checkAuth(Role.SUPER_ADMIN, Role.ADMIN),
+    checkAuth(...Object.values(Role)),
     vehicleController.getAllVehicle)
 
 router.get("/:vehicleId",

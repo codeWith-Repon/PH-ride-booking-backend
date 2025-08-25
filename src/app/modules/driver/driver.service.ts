@@ -4,6 +4,7 @@ import { IDriver } from "./driver.interface";
 import { Driver } from "./driver.model";
 import { Role } from "../user/user.interface";
 import { Vehicle } from "../vehicle/vehicle.model";
+import { QueryBuilder } from "../../utils/QueryBuilder";
 
 
 const createDriver = async (payload: IDriver) => {
@@ -27,7 +28,7 @@ const createDriver = async (payload: IDriver) => {
     if (!isVehicleExist) {
         throw new AppError(400, "Vehicle is not exist!!")
     }
-    const newDriver = await Driver.create(payload)
+    const newDriver = (await (await Driver.create(payload)).populate("user", "name email")).populate("vehicle", "vehicleType brand model images vehicleLicense")
 
     return newDriver
 }
@@ -70,11 +71,25 @@ const updateDriver = async (driverId: string, decodedToken: JwtPayload, payload:
     return updatedDriver
 }
 
-const getAllDriver = async () => {
+const getAllDriver = async (query: Record<string, string>) => {
+    const queryBuilder = new QueryBuilder(Driver.find(), query)
+    const drivers = await queryBuilder
+        .filter()
+        .sort()
+        .fields()
+        .paginate()
+        .populate("user","name email isActive")
+        .populate("vehicle", "vehicleType brand model images vehicleLicense")
 
-    const drivers = await Driver.find({})
+    const [data, meta] = await Promise.all([
+        drivers.build(),
+        queryBuilder.getMeta()
+    ])
 
-    return drivers
+    return {
+        data,
+        meta
+    }
 }
 const getSingleDriver = async (driverId: string) => {
 

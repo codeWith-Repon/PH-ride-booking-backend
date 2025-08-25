@@ -44,10 +44,12 @@ const updateVehicle = catchAsync(async (req: Request, res: Response, next: NextF
 
 const getAllVehicle = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
 
-    const result = await vehicleService.getAllVehicle()
+    const query = req.query
+
+    const result = await vehicleService.getAllVehicle(query as Record<string, string>)
     sendResponse(res, {
         success: true,
-        statusCode: 201,
+        statusCode: 200,
         message: "Vehicles retrieved Successfully",
         data: result
     })

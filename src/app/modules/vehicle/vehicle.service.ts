@@ -4,19 +4,19 @@ import { IVehicle } from "./vehicle.interface";
 import { Vehicle } from "./vehicle.model";
 import { Role } from "../user/user.interface";
 import { deleteImageFromCloudinary } from "../../config/cloudinary.config";
-import { User } from "../user/user.model";
+import { vehicleSearchableFields } from "./vehicle.constant";
+import { QueryBuilder } from "../../utils/QueryBuilder";
 
 
 const createVehicle = async (payload: IVehicle, decodedToken: JwtPayload) => {
 
     const { vehicleLicense } = payload
 
-    const isUserExist = await User.findById(decodedToken.userId)
     const isVehicleExist = await Vehicle.findOne({ vehicleLicense })
+    const isDriverExist = await Vehicle.findOne({ driver: decodedToken.userId })
 
-
-    if (isUserExist) {
-        throw new AppError(400, "User already has a vehicle!");
+    if (isDriverExist) {
+        throw new AppError(400, "You already have a vehicle registered!!")
     }
 
     if (isVehicleExist) {
@@ -27,7 +27,11 @@ const createVehicle = async (payload: IVehicle, decodedToken: JwtPayload) => {
         driver: decodedToken.userId
     }
     const newVehicle = await Vehicle.create(vehiclePayload)
-    return newVehicle
+    return newVehicle.populate(
+        "driver",
+        "email name _id"
+    );
+
 }
 
 const updateVehicle = async (payload: IVehicle, vehicleId: string, decodedToken: JwtPayload) => {
@@ -77,14 +81,30 @@ const updateVehicle = async (payload: IVehicle, vehicleId: string, decodedToken:
     return updatedVehicle
 }
 
-const getAllVehicle = async () => {
-    const vehicles = await Vehicle.find({})
+const getAllVehicle = async (query: Record<string, string>) => {
+    const queryBuilder = new QueryBuilder(Vehicle.find(), query)
 
-    return vehicles
+    const vehicles = await queryBuilder
+        .search(vehicleSearchableFields)
+        .filter()
+        .sort()
+        .fields()
+        .paginate()
+
+
+    const [data, meta] = await Promise.all([
+        vehicles.build(),
+        queryBuilder.getMeta()
+    ])
+    return {
+        data,
+        meta
+    }
 }
 
+
 const getSingleVehicle = async (vehicleId: string) => {
-    const vehicles = await Vehicle.findById(vehicleId).populate("driver")
+    const vehicles = await Vehicle.findById(vehicleId).populate("driver", "name email")
 
     return vehicles
 }

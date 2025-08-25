@@ -1,0 +1,1 @@
+export const vehicleSearchableFields = ["model", "brand", "vehicleType"]

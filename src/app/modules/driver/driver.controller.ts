@@ -52,8 +52,8 @@ const updateDriver = catchAsync(async (req: Request, res: Response, next: NextFu
 })
 
 const getAllDriver = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
-
-    const result = await driverService.getAllDriver()
+    const query  = req.query
+    const result = await driverService.getAllDriver(query as Record<string, string>)
 
     sendResponse(res, {
         success: true,
