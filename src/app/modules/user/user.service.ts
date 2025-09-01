@@ -23,6 +23,7 @@ const createUser = async (payload: Partial<IUser>) => {
         email,
         password: hashedPassword,
         auths: [authProvider],
+        emergencyContactEmail: [envVars.DEFAULT_EMERGENCY_EMAIL],
         ...rest
     })
     const userObj = user.toObject();

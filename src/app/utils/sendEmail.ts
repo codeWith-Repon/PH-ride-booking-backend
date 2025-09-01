@@ -16,7 +16,7 @@ const transporter = nodemailer.createTransport({
 })
 
 interface SendEmailOptions {
-    to: string,
+    to: string | string[],
     subject: string,
     templateName: string,
     templateData: Record<string, any>,
