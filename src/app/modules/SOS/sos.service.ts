@@ -8,6 +8,7 @@ import { Driver } from "../driver/driver.model"
 import { RIDE_STATUS } from "../ride/ride.interface"
 import { SOS } from "./sos.model"
 import { sendEmail } from "../../utils/sendEmail"
+import { SOS_STATUS } from "./sos.interface"
 
 const addEmergencyContact = async (decodedToken: JwtPayload, emergencyContact: string) => {
     const userId = decodedToken.userId
@@ -77,9 +78,20 @@ const sendSosMessage = async (rideId: string, payload: { message?: string, locat
     return sos
 }
 
+const updateSosStatus = async (sosId: string, payload: { status: SOS_STATUS }) => {
+    const sos = await SOS.findById(sosId)
+    if (!sos) {
+        throw new AppError(404, "SOS not found")
+    }
+    sos.status = payload.status
+
+    return await sos.save()
+}
+
 
 
 export const SOSServices = {
     addEmergencyContact,
-    sendSosMessage
+    sendSosMessage,
+    updateSosStatus
 }
