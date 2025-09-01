@@ -13,22 +13,30 @@ router.post("/book",
     checkAuth(...Object.values(Role)),
     rideController.createRide)
 
-router.post("/update-status",
-    validateRequest(updateRideStatusZodSchema),
-    checkAuth(...Object.values(Role)),
-    rideController.updateRideStatus)
-
 router.post("/verify-otp",
     checkAuth(...Object.values(Role)),
     rideController.otpVerify)
 
 router.get("/rides",
-    checkAuth(Role.ADMIN, Role.SUPER_ADMIN),
+    checkAuth(...Object.values(Role)),
     rideController.getAllRide)
+
+router.get("/current-ride",
+    checkAuth(...Object.values(Role)),
+    rideController.getCurrentRide)
 
 router.get("/history",
     checkAuth(Role.DRIVER, Role.RIDER),
     rideController.getRideHistory)
+
+router.post("/set-fare/:rideId",
+    checkAuth(...Object.values(Role)),
+    rideController.setRideFare)
+
+router.post("/update-status/:rideId",
+    validateRequest(updateRideStatusZodSchema),
+    checkAuth(...Object.values(Role)),
+    rideController.updateRideStatus)
 
 router.get("/:rideId",
     checkAuth(Role.ADMIN, Role.SUPER_ADMIN),

@@ -42,6 +42,5 @@ export const updateRideZodSchema = z.object({
 });
 
 export const updateRideStatusZodSchema = z.object({
-    rideStatus: z.enum(RIDE_STATUS).optional(),
-    fare: z.number().positive().optional(),
+    rideStatus: z.enum(RIDE_STATUS).optional()
 })

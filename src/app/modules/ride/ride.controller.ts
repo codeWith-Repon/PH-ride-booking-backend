@@ -20,13 +20,28 @@ const createRide = catchAsync(async (req: Request, res: Response, next: NextFunc
 
 const updateRideStatus = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
     const payload = req.body
+    const { rideId } = req.params
     const decodedToken = req.user as JwtPayload
-    const result = await RideServices.updateRideStatus(payload, decodedToken)
+    const result = await RideServices.updateRideStatus(payload, decodedToken, rideId)
 
     sendResponse(res, {
         success: true,
         statusCode: 201,
         message: "Ride Status Changed Successfully",
+        data: result
+    })
+})
+
+const setRideFare = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+    const payload = req.body
+    const { rideId } = req.params
+    const decodedToken = req.user as JwtPayload
+    const result = await RideServices.setRideFare(payload, decodedToken, rideId)
+
+    sendResponse(res, {
+        success: true,
+        statusCode: 200,
+        message: "Ride Fare Set Successfully",
         data: result
     })
 })
@@ -46,7 +61,7 @@ const otpVerify = catchAsync(async (req: Request, res: Response, next: NextFunct
 
 const getAllRide = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
 
-    const result = await RideServices.getAllRide()
+    const result = await RideServices.getAllRide(req.query as Record<string, string>)
 
     sendResponse(res, {
         success: true,
@@ -82,11 +97,26 @@ const getRideHistory = catchAsync(async (req: Request, res: Response, next: Next
     })
 })
 
+const getCurrentRide = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+
+    const decodedToken = req.user as JwtPayload
+    const result = await RideServices.getCurrentRide(decodedToken)
+
+    sendResponse(res, {
+        success: true,
+        statusCode: 200,
+        message: "Current Ride Retrieved Successfully!",
+        data: result
+    })
+})
+
 export const rideController = {
     createRide,
     updateRideStatus,
     otpVerify,
     getAllRide,
     getSingleRide,
-    getRideHistory
+    getRideHistory,
+    getCurrentRide,
+    setRideFare
 }

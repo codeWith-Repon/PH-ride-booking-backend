@@ -1,0 +1,1 @@
+export const rideSearchableFields = ["pickupLocation", "dropLocation", "rideStatus"]

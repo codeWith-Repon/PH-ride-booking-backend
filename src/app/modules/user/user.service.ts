@@ -69,10 +69,12 @@ const updateUser = async (payload: IUser, decodedToken: JwtPayload) => {
         payload.password = await bcryptjs.hash(payload.password, Number(envVars.BCRYPT_SALT_ROUND))
     }
 
-    // if (payload.image) {
-    //     const existUser = await User.findById(decodedToken.userId)
-    //     await deleteImageFromCloudinary(existUser?.image as string)
-    // }
+    if (payload.phone) {
+        const existUser = await User.findOne({ _id: { $ne: decodedToken.userId }, phone: payload.phone })
+        if (existUser?.phone === payload.phone) {
+            throw new AppError(400, "Phone number already exist")
+        }
+    }
 
     const updatedUser = await User.findByIdAndUpdate(decodedToken.userId, payload, { new: true, runValidators: true })
 
