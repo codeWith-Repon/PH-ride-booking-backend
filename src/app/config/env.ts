@@ -35,7 +35,9 @@ interface EnvConfig {
     REDIS_HOST: string,
     REDIS_PORT: string,
     REDIS_USERNAME: string,
-    REDIS_PASSWORD: string
+    REDIS_PASSWORD: string,
+
+    DEFAULT_EMERGENCY_EMAIL: string
 }
 
 const loadEnvVariables = (): EnvConfig => {
@@ -66,7 +68,8 @@ const loadEnvVariables = (): EnvConfig => {
         "REDIS_HOST",
         "REDIS_PORT",
         "REDIS_USERNAME",
-        "REDIS_PASSWORD"
+        "REDIS_PASSWORD",
+        "DEFAULT_EMERGENCY_EMAIL"
     ]
 
     requiredEnvVariables.forEach(key => {
@@ -106,7 +109,9 @@ const loadEnvVariables = (): EnvConfig => {
         REDIS_HOST: process.env.REDIS_HOST!,
         REDIS_PORT: process.env.REDIS_PORT!,
         REDIS_USERNAME: process.env.REDIS_USERNAME!,
-        REDIS_PASSWORD: process.env.REDIS_PASSWORD!
+        REDIS_PASSWORD: process.env.REDIS_PASSWORD!,
+
+        DEFAULT_EMERGENCY_EMAIL: process.env.DEFAULT_EMERGENCY_EMAIL!
     }
 }
 

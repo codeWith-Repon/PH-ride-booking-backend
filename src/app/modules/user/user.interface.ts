@@ -31,4 +31,5 @@ export interface IUser {
     isVerified?: boolean;
     isDeleted?: boolean;
     auths: IAuthProvider[];
+    emergencyContactEmail: string[]
 }

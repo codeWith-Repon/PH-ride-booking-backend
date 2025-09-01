@@ -77,6 +77,7 @@ passport.use(
                         picture: profile.photos?.[0].value,
                         role: Role.RIDER,
                         isVerified: true,
+                        emergencyContactEmail: [envVars.DEFAULT_EMERGENCY_EMAIL],
                         auths: [
                             {
                                 provider: "google",
