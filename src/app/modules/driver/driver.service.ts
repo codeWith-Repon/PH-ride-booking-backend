@@ -1,10 +1,11 @@
 import { JwtPayload } from "jsonwebtoken";
 import AppError from "../../errorHelpers/AppError";
-import { IDriver } from "./driver.interface";
+import { AVAILABILITY_STATUS, DRIVER_STATUS, IDriver } from "./driver.interface";
 import { Driver } from "./driver.model";
 import { Role } from "../user/user.interface";
 import { Vehicle } from "../vehicle/vehicle.model";
 import { QueryBuilder } from "../../utils/QueryBuilder";
+import { RIDE_STATUS } from "../ride/ride.interface";
 
 
 const createDriver = async (payload: IDriver) => {
@@ -78,7 +79,7 @@ const getAllDriver = async (query: Record<string, string>) => {
         .sort()
         .fields()
         .paginate()
-        .populate("user","name email isActive")
+        .populate("user", "name email isActive")
         .populate("vehicle", "vehicleType brand model images vehicleLicense")
 
     const [data, meta] = await Promise.all([
@@ -90,6 +91,63 @@ const getAllDriver = async (query: Record<string, string>) => {
         data,
         meta
     }
+}
+
+const getAllFreeDriver = async () => {
+    const freeDrivers = await Driver.aggregate([
+        {
+            $match: {
+                availabilityStatus: AVAILABILITY_STATUS.ONLINE,
+                status: DRIVER_STATUS.APPROVED
+            }
+        },
+        {
+            $lookup: {
+                from: "rides",
+                let: { driverId: "$_id" },
+                pipeline: [
+                    {
+                        $match: {
+                            $expr: { $eq: ["$driver", "$$driverId"] },
+                            rideStatus: { $in: [RIDE_STATUS.ACCEPTED, RIDE_STATUS.PICKED_UP, RIDE_STATUS.IN_TRANSIT] }
+                        }
+                    }
+                ],
+                as: "activeRides"
+            }
+        },
+        {
+            $match: {
+                activeRides: { $size: 0 }
+            }
+        },
+        {
+            $lookup: {
+                from: "users",
+                localField: "user",
+                foreignField: "_id",
+                as: "user"
+            }
+        },
+        {
+            $unwind: "$user"
+        },
+        {
+            $project: {
+                _id: 1,
+                licenseNumber: 1,
+                experience: 1,
+                vehicle: 1,
+                availabilityStatus: 1,
+                status: 1,
+                "user.name": 1,
+                "user.email": 1,
+                "user.phone": 1,
+            }
+        }
+    ])
+
+    return freeDrivers
 }
 const getSingleDriver = async (driverId: string) => {
 
@@ -103,5 +161,6 @@ export const driverService = {
     // changeDriverStatus,
     updateDriver,
     getAllDriver,
-    getSingleDriver
+    getSingleDriver,
+    getAllFreeDriver
 }

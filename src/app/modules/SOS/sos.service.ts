@@ -60,17 +60,17 @@ const sendSosMessage = async (rideId: string, payload: { message?: string, locat
         subject: "🚨 Emergency SOS Alert",
         templateName: "sos-alert",
         templateData: {
-            rideId: currentRide._id,
-            location: payload.location,
-            message: payload.message,
+            rideId: currentRide._id || "",
+            location: payload?.location || "",
+            message: payload?.message,
             user: userId
         }
     })
 
     const sos = await SOS.create({
         ride: currentRide._id,
-        location: payload.location,
-        message: payload.message,
+        location: payload?.location,
+        message: payload?.message,
         sender: userId,
         contactEmails: user.emergencyContactEmail,
     });

@@ -2,7 +2,7 @@ import { Router } from "express";
 import { SOSController } from "./sos.controller";
 import { checkAuth } from "../../middlewares/checkAuth";
 import { Role } from "../user/user.interface";
-import { addEmergencyContactZodSchema, sendSosMessageZodSchema, updateSosStatusZodSchema } from "./sos.validation";
+import { addEmergencyContactZodSchema, updateSosStatusZodSchema } from "./sos.validation";
 import validateRequest from "../../middlewares/validateRequest";
 
 
@@ -15,7 +15,6 @@ router.post("/add-contact",
 
 router.post("/send-message/:rideId",
     checkAuth(...Object.values(Role)),
-    validateRequest(sendSosMessageZodSchema),
     SOSController.sendSosMessage)
 
 router.patch("/update-status/:sosId",

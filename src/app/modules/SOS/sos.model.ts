@@ -9,7 +9,6 @@ const SOSSchema = new Schema<ISos>({
     },
     location: {
         type: String,
-        required: true
     },
     message: {
         type: String

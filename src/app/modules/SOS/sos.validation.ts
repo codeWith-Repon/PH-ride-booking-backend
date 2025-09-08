@@ -7,11 +7,6 @@ export const addEmergencyContactZodSchema = z.object({
 })
 
 
-export const sendSosMessageZodSchema = z.object({
-    location: z.string().optional(),
-    message: z.string().optional(),
-})
-
 export const updateSosStatusZodSchema = z.object({
     status: z.enum(Object.values(SOS_STATUS) as [string])
 })
