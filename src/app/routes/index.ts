@@ -6,6 +6,7 @@ import { driverRoutes } from "../modules/driver/driver.routes";
 import { rideRoutes } from "../modules/ride/ride.route";
 import { OtpRoutes } from "../modules/otp/otp.route";
 import { SOSRoutes } from "../modules/SOS/sos.route";
+import { StatsRoutes } from "../modules/stats/stats.route";
 
 
 export const router = Router()
@@ -38,6 +39,10 @@ const moduleRoutes = [
     {
         path: "/sos",
         route: SOSRoutes
+    },
+    {
+        path: "/stats",
+        route: StatsRoutes
     }
 ]
 
