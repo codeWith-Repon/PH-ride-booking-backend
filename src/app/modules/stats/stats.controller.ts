@@ -22,14 +22,14 @@ const getMonthlyStats = catchAsync(async (req: Request, res: Response, next: Nex
     })
 })
 
-const getWeeklyUsersStats = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+const getWeeklyTotalUserStats = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
     const { month, year, status } = req.query;
 
     const monthNum = month ? parseInt(month as string) : undefined;
     const yearNum = year ? parseInt(year as string) : undefined;
     const statusFilter = status as IsActive | undefined
 
-    const data = await statsService.getWeeklyUserStats(monthNum, yearNum, statusFilter)
+    const data = await statsService.getWeeklyTotalUserStats(monthNum, yearNum, statusFilter)
 
     sendResponse(res, {
         success: true,
@@ -42,5 +42,5 @@ const getWeeklyUsersStats = catchAsync(async (req: Request, res: Response, next:
 
 export const StatsController = {
     getMonthlyStats,
-    getWeeklyUsersStats
+    getWeeklyTotalUserStats
 }

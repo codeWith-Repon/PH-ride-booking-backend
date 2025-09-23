@@ -155,10 +155,24 @@ const updateRideStatus = async (payload: Partial<IRide>, decodedToken: JwtPayloa
                 throw new AppError(400, "Ride is already accepted or ongoing. You can't cancel now.")
             }
 
-            const updatedRide = await Ride.findByIdAndUpdate(rideId, payload, { new: true, runValidators: true })
+            const session = await mongoose.startSession()
 
+            session.startTransaction()
 
-            return updatedRide
+            try {
+
+                const updatedRide = await Ride.findByIdAndUpdate(rideId, payload, { new: true, runValidators: true, session })
+                await Payment.findOneAndUpdate({ ride: currentRide._id }, { status: PAYMENT_STATUS.CANCELLED }, { session })
+                await session.commitTransaction()
+
+                return updatedRide
+            } catch (error) {
+                await session.abortTransaction()
+                throw error
+            } finally {
+                session.endSession()
+            }
+
         }
         throw new AppError(403, "Rider can only cancel ride!")
 

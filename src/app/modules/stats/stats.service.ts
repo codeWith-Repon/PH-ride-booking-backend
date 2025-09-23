@@ -93,7 +93,7 @@ const getMonthlyStats = async (month?: number, year?: number) => {
     return { month: m + 1, year: y, stats };
 }
 
-const getWeeklyUserStats = async (month?: number, year?: number, status?: IsActive) => {
+const getWeeklyTotalUserStats = async (month?: number, year?: number, status?: IsActive) => {
     const now = new Date();
 
     const targetMonth = month ?? now.getMonth() + 1;
@@ -149,9 +149,29 @@ const getWeeklyUserStats = async (month?: number, year?: number, status?: IsActi
     userStats.forEach(u => {
         const weekIndex = u._id.week - 1;
         if (weekIndex >= 0 && weekIndex < 4) {
-            if (u._id.status === IsActive.ACTIVE) stats[weekIndex].active = u.count;
-            else if (u._id.status === IsActive.INACTIVE) stats[weekIndex].inactive = u.count;
-            else if (u._id.status === IsActive.BLOCKED) stats[weekIndex].blocked = u.count;
+            if (u._id.status === IsActive.ACTIVE) {
+                if (weekIndex === 0) {
+                    stats[weekIndex].active = u.count;
+                } else {
+                    stats[weekIndex].active = u.count + stats[weekIndex - 1].active;
+                }
+            }
+
+            else if (u._id.status === IsActive.INACTIVE) {
+                if (weekIndex === 0) {
+                    stats[weekIndex].inactive = u.count
+                } else {
+                    stats[weekIndex].inactive = u.count + stats[weekIndex - 1].inactive
+                }
+            }
+
+            else if (u._id.status === IsActive.BLOCKED) {
+                if (weekIndex === 0) {
+                    stats[weekIndex].blocked = u.count
+                } else {
+                    stats[weekIndex].blocked = u.count + stats[weekIndex - 1].blocked
+                }
+            }
         }
     })
 
@@ -166,5 +186,5 @@ const getWeeklyUserStats = async (month?: number, year?: number, status?: IsActi
 
 export const statsService = {
     getMonthlyStats,
-    getWeeklyUserStats
+    getWeeklyTotalUserStats
 }
