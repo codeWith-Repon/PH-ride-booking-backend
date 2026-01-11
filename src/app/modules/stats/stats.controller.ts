@@ -11,12 +11,13 @@ const getMonthlyStats = catchAsync(async (req: Request, res: Response, next: Nex
 
     const month = req.query.month ? parseInt(req.query.month as string) : undefined;
     const year = req.query.year ? parseInt(req.query.year as string) : undefined;
+    const status = req.query.status ? req.query.status : undefined;
 
-    const data = await statsService.getMonthlyStats(month, year);
+    const data = await statsService.getMonthlyStats(month, year, status as IsActive);
 
     sendResponse(res, {
         success: true,
-        statusCode: 201,
+        statusCode: 200,
         message: "Stats retrieved Successfully",
         data
     })
@@ -33,7 +34,7 @@ const getWeeklyTotalUserStats = catchAsync(async (req: Request, res: Response, n
 
     sendResponse(res, {
         success: true,
-        statusCode: 201,
+        statusCode: 200,
         message: "Weekly stats retrieved Successfully",
         data
     })

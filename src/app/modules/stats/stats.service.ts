@@ -1,11 +1,11 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { startOfMonth, endOfMonth } from "date-fns";
 import { User } from "../user/user.model";
 import { Driver } from "../driver/driver.model";
 import { IsActive } from "../user/user.interface";
 
 
-const getMonthlyStats = async (month?: number, year?: number) => {
-
+const getMonthlyStats = async (month?: number, year?: number, status?: string) => {
 
     const now = new Date();
     const m = month !== undefined ? month - 1 : now.getMonth();
@@ -15,8 +15,20 @@ const getMonthlyStats = async (month?: number, year?: number) => {
     const monthStart = startOfMonth(new Date(y, m))
     const monthEnd = endOfMonth(new Date(y, m));
 
+    const userMatch: any = {
+        createdAt: {
+            $gte: monthStart,
+            $lte: monthEnd
+        }
+    }
+
+    if (status && status !== "ALL") {
+        userMatch.isActive = status
+    }
+
+
     const userStats = await User.aggregate([
-        { $match: { createdAt: { $gte: monthStart, $lte: monthEnd } } },
+        { $match: userMatch },
         {
             $addFields: {
                 week: {
