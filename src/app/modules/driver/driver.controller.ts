@@ -57,7 +57,7 @@ const getAllDriver = catchAsync(async (req: Request, res: Response, next: NextFu
 
     sendResponse(res, {
         success: true,
-        statusCode: 201,
+        statusCode: 200,
         message: "Drivers retrieved Successfully",
         data: result
     })
@@ -70,7 +70,7 @@ const getAllFreeDriver = catchAsync(async (req: Request, res: Response, next: Ne
 
     sendResponse(res, {
         success: true,
-        statusCode: 201,
+        statusCode: 200,
         message: "Drivers retrieved Successfully",
         data: result
     })
@@ -83,7 +83,7 @@ const getSingleDriver = catchAsync(async (req: Request, res: Response, next: Nex
 
     sendResponse(res, {
         success: true,
-        statusCode: 201,
+        statusCode: 200,
         message: "Driver retrieved Successfully",
         data: result
     })
