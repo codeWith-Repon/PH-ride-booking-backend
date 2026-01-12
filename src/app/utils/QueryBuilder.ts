@@ -57,12 +57,18 @@ export class QueryBuilder<T> {
             }
         }
 
-        this.filterQuery = filter as FilterQuery<T>;
-        this.modelQuery = this.modelQuery.find(this.filterQuery);
+        // FIX: Instead of simple assignment, merge with existing conditions (like search)
+        const newFilterQuery = filter as FilterQuery<T>;
 
+        if (Object.keys(this.filterQuery).length > 0) {
+            this.filterQuery = { $and: [this.filterQuery, newFilterQuery] } as FilterQuery<T>;
+        } else {
+            this.filterQuery = newFilterQuery;
+        }
+
+        this.modelQuery = this.modelQuery.find(newFilterQuery);
         return this;
     }
-
     // ---------------- SEARCH (Handles local fields) ----------------
     async search(searchableField: string[], nestedConfigs?: NestedMapping[]): Promise<this> {
         const searchTerm = this.query.searchTerm;
