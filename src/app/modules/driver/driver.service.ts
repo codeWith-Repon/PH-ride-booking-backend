@@ -4,9 +4,9 @@ import { AVAILABILITY_STATUS, DRIVER_STATUS, IDriver } from "./driver.interface"
 import { Driver } from "./driver.model";
 import { Role } from "../user/user.interface";
 import { Vehicle } from "../vehicle/vehicle.model";
-import { NestedMapping, QueryBuilder } from "../../utils/QueryBuilder";
 import { RIDE_STATUS } from "../ride/ride.interface";
-import { User } from "../user/user.model";
+import { QueryBuilder } from "../../utils/QueryBuilder";
+import { nestedFilterMapping, nestedSearchMapping } from "./driver.constant";
 
 
 const createDriver = async (payload: IDriver) => {
@@ -75,22 +75,6 @@ const updateDriver = async (driverId: string, decodedToken: JwtPayload, payload:
 const getAllDriver = async (query: Record<string, string>) => {
     const queryBuilder = new QueryBuilder(Driver.find(), query);
 
-    // If you need nested filtering, provide this mapping:
-    const nestedFilterMapping: NestedMapping[] = [
-        { model: Vehicle, queryField: 'brand', pathInCurrentDoc: 'vehicle', pathInTargetDoc: 'brand' },
-        { model: Vehicle, queryField: 'model', pathInCurrentDoc: 'vehicle', pathInTargetDoc: 'model' },
-        { model: Vehicle, queryField: 'vehicleType', pathInCurrentDoc: 'vehicle', pathInTargetDoc: 'vehicleType' },
-        { model: Vehicle, queryField: 'vehicleLicense', pathInCurrentDoc: 'vehicle', pathInTargetDoc: 'vehicleLicense' },
-        { model: User, queryField: 'email', pathInCurrentDoc: 'user', pathInTargetDoc: 'email' },
-    ];
-
-    const nestedSearchMapping: NestedMapping[] = [
-        { model: User, queryField: 'name', pathInCurrentDoc: 'user', pathInTargetDoc: 'name' },
-        { model: User, queryField: 'email', pathInCurrentDoc: 'user', pathInTargetDoc: 'email' },
-        { model: Vehicle, queryField: 'brand', pathInCurrentDoc: 'vehicle', pathInTargetDoc: 'brand' },
-        { model: Vehicle, queryField: 'model', pathInCurrentDoc: 'vehicle', pathInTargetDoc: 'model' },
-        { model: Vehicle, queryField: 'vehicleLicense', pathInCurrentDoc: 'vehicle', pathInTargetDoc: 'vehicleLicense' },
-    ]
 
     // Note: Use 'await' for filter because it now does DB lookups
     await queryBuilder.filter(nestedFilterMapping);
