@@ -4,8 +4,8 @@ import { IVehicle } from "./vehicle.interface";
 import { Vehicle } from "./vehicle.model";
 import { Role } from "../user/user.interface";
 import { deleteImageFromCloudinary } from "../../config/cloudinary.config";
-import { vehicleSearchableFields } from "./vehicle.constant";
 import { QueryBuilder } from "../../utils/QueryBuilder";
+import { vehicleNestedFilterMapping, vehicleNestedSearchMapping, vehicleSearchableFields } from "./vehicle.constant";
 
 
 const createVehicle = async (payload: IVehicle, decodedToken: JwtPayload) => {
@@ -82,25 +82,30 @@ const updateVehicle = async (payload: IVehicle, vehicleId: string, decodedToken:
 }
 
 const getAllVehicle = async (query: Record<string, string>) => {
-    const queryBuilder = new QueryBuilder(Vehicle.find(), query)
+    const queryBuilder = new QueryBuilder(Vehicle.find(), query);
 
-    const vehicles = await queryBuilder
-        .search(vehicleSearchableFields)
-        .filter()
+    // 1. Apply Search and Filter (Sequential Await)
+    await queryBuilder.search(vehicleSearchableFields, vehicleNestedSearchMapping);
+    await queryBuilder.filter(vehicleNestedFilterMapping);
+
+    // 2. Chaining Synchronous Methods
+    queryBuilder
         .sort()
         .fields()
         .paginate()
+        .populate("driver", "id name email ");
 
-
+    // 3. Execute
     const [data, meta] = await Promise.all([
-        vehicles.build(),
+        queryBuilder.build(),
         queryBuilder.getMeta()
-    ])
+    ]);
+
     return {
+        meta,
         data,
-        meta
-    }
-}
+    };
+};
 
 
 const getSingleVehicle = async (vehicleId: string) => {

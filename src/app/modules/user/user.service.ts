@@ -4,6 +4,8 @@ import AppError from "../../errorHelpers/AppError";
 import { IAuthProvider, IUser, Role } from "./user.interface";
 import { User } from "./user.model";
 import bcryptjs from "bcryptjs"
+import { QueryBuilder } from "../../utils/QueryBuilder";
+import { userSearchableFields } from "./user.constant";
 // import { deleteImageFromCloudinary } from "../../config/cloudinary.config";
 
 const createUser = async (payload: Partial<IUser>) => {
@@ -32,9 +34,29 @@ const createUser = async (payload: Partial<IUser>) => {
     return userObj;
 }
 
-const getAllUser = async () => {
-    const user = User.find().select("-password");
-    return user
+const getAllUser = async (query: Record<string, string>) => {
+    const userQuery = User.find().select("-password");
+
+    const queryBuilder = new QueryBuilder(userQuery, query);
+
+    await queryBuilder.search(userSearchableFields)
+    await queryBuilder.filter();
+
+
+    queryBuilder
+        .sort()
+        .paginate()
+        .fields();
+
+    const [data, meta] = await Promise.all([
+        queryBuilder.build(),
+        queryBuilder.getMeta()
+    ]);
+
+    return {
+        meta,
+        data
+    };
 }
 const getSingleUser = async (userId: string) => {
     const user = User.findById(userId).select("-password");

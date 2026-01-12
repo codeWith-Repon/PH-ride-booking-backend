@@ -12,7 +12,7 @@ import mongoose from "mongoose";
 import { sendEmail } from "../../utils/sendEmail";
 import { User } from "../user/user.model";
 import { QueryBuilder } from "../../utils/QueryBuilder";
-import { rideSearchableFields } from "./ride.constant";
+import { rideNestedFilterMapping, rideNestedSearchMapping, rideSearchableFields } from "./ride.constant";
 
 
 const getTransactionId = () => {
@@ -342,9 +342,11 @@ const otpVerify = async (payload: { otp: string }, decodedToken: JwtPayload) => 
 
 const getAllRide = async (query: Record<string, string>) => {
     const queryBuilder = new QueryBuilder(Ride.find(), query)
+
+    await queryBuilder.filter(rideNestedFilterMapping);
+    await queryBuilder.search(rideSearchableFields, rideNestedSearchMapping);
+
     const rides = await queryBuilder
-        .search(rideSearchableFields)
-        .filter()
         .sort()
         .fields()
         .paginate()
@@ -357,8 +359,8 @@ const getAllRide = async (query: Record<string, string>) => {
         queryBuilder.getMeta()
     ])
     return {
+        meta,
         data,
-        meta
     }
 }
 

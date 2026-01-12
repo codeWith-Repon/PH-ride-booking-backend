@@ -4,11 +4,15 @@ import { Model } from "mongoose";
 import { NestedMapping } from "./QueryBuilder";
 import { User } from "../modules/user/user.model";
 import { Vehicle } from "../modules/vehicle/vehicle.model";
+import { Payment } from "../modules/payment/payment.model";
+import { Driver } from "../modules/driver/driver.model";
 
 // Map string keys to actual Mongoose Models
 const modelMap: Record<string, Model<any>> = {
     user: User,
     vehicle: Vehicle,
+    payment: Payment,
+    driver: Driver
 };
 
 export const generateNestedMappings = (fields: string[] | Record<string, string>): NestedMapping[] => {
