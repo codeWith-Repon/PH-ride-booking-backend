@@ -23,7 +23,7 @@ router.get("/drivers",
     driverController.getAllDriver)
 
 router.get("/free-drivers",
-    checkAuth(...Object.values(Role)),
+    // checkAuth(...Object.values(Role)),
     driverController.getAllFreeDriver)
 
 router.get("/:driverId",

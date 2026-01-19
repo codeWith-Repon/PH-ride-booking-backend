@@ -124,6 +124,8 @@ const getAllFreeDriver = async () => {
                 activeRides: { $size: 0 }
             }
         },
+        { $limit: 10 },
+        //  user lookup
         {
             $lookup: {
                 from: "users",
@@ -135,17 +137,32 @@ const getAllFreeDriver = async () => {
         {
             $unwind: "$user"
         },
+        // vehicle lookup 
+        {
+            $lookup: {
+                from: "vehicles",
+                localField: "vehicle",
+                foreignField: "_id",
+                as: "vehicle",
+            },
+        },
+        { $unwind: "$vehicle" },
+
         {
             $project: {
                 _id: 1,
                 licenseNumber: 1,
                 experience: 1,
-                vehicle: 1,
                 availabilityStatus: 1,
                 status: 1,
+                "vehicle.vehicleType": 1,
+                "vehicle.brand": 1,
+                "vehicle.model": 1,
+                "vehicle.images": 1,
                 "user.name": 1,
                 "user.email": 1,
                 "user.phone": 1,
+                "user.image": 1
             }
         }
     ])
