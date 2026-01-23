@@ -1,12 +1,14 @@
 import z from "zod";
 import { RIDE_STATUS } from "./ride.interface";
+import { PAYMENT_METHOD } from "../payment/payment.interface";
 
 export const createRideZodSchema = z.object({
     // user: z.string(),
     driver: z.string(),
     pickupLocation: z.string(),
     dropLocation: z.string(),
-    distance: z.number().positive().optional()
+    distance: z.number().positive().optional(),
+    paymentMethod: z.enum(Object.values(PAYMENT_METHOD)),
 })
 
 export const updateRideZodSchema = z.object({

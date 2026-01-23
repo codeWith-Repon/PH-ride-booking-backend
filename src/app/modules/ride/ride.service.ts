@@ -7,23 +7,19 @@ import { Ride } from "./ride.model";
 import { Role } from "../user/user.interface";
 import { DRIVER_STATUS } from "../driver/driver.interface";
 import { Payment } from "../payment/payment.model";
-import { PAYMENT_STATUS } from "../payment/payment.interface";
+import { PAYMENT_METHOD, PAYMENT_STATUS } from "../payment/payment.interface";
 import mongoose from "mongoose";
 import { sendEmail } from "../../utils/sendEmail";
 import { User } from "../user/user.model";
 import { QueryBuilder } from "../../utils/QueryBuilder";
 import { rideNestedFilterMapping, rideNestedSearchMapping, rideSearchableFields } from "./ride.constant";
-
-
-const getTransactionId = () => {
-    return `tran_${Date.now()}_${Math.floor(Math.random() * 1000)}`
-}
+import calculateFare from "../../utils/calculateFare";
+import getTransactionId from "../../utils/transactionId";
 
 const createRide = async (payload: IRide, decodedToken: JwtPayload) => {
     const generateOtp = Math.floor(100000 + Math.random() * 900000)
-    const transactionId = getTransactionId()
 
-    const { driver } = payload
+    const { driver, distance, paymentMethod } = payload
     const { userId } = decodedToken
 
     const session = await mongoose.startSession()
@@ -72,33 +68,37 @@ const createRide = async (payload: IRide, decodedToken: JwtPayload) => {
         if (checkDriverOngoingRide) {
             throw new AppError(400, "Driver is currently on another ride")
         }
-        const alreadyRequestedUser = await Ride.findOne({ user: userId, rideStatus: RIDE_STATUS.REQUESTED })
-        if (alreadyRequestedUser) {
-            throw new AppError(400, "You are already sent request")
+
+        const fare = distance ? calculateFare(distance) : 0
+
+        const ride = await Ride.create([
+            {
+                ...payload,
+                user: userId,
+                rideOtp: generateOtp,
+                fare,
+                paymentStatus: PAYMENT_STATUS.UNPAID
+            }
+        ], { session })
+
+        let payment = null;
+
+        if (paymentMethod !== PAYMENT_METHOD.CASH) {
+            payment = await Payment.create([{
+                ride: ride[0]._id,
+                transactionId: getTransactionId(paymentMethod),
+                amount: ride[0].fare,
+                status: PAYMENT_STATUS.UNPAID,
+                paymentMethod
+            }], { session })
+
+            await Ride
+                .findByIdAndUpdate(
+                    ride[0]._id,
+                    { payment: payment[0]._id },
+                    { new: true, session }
+                )
         }
-
-
-
-        payload.rideOtp = generateOtp
-        payload.user = userId
-        const ride = await Ride.create([payload], { session })
-
-        const payment = await Payment.create([{
-            ride: ride[0]._id,
-            status: PAYMENT_STATUS.UNPAID,
-            transactionId: transactionId,
-            amount: ride[0].fare
-        }], { session })
-
-        const updatedBooking = await Ride
-            .findByIdAndUpdate(
-                ride[0]._id,
-                { payment: payment[0]._id },
-                { new: true, runValidators: true, session }
-            )
-            .populate("user", "name email _id")
-            .populate("driver", "_id user vehicle licenseNumber experience totalRides")
-            .populate("payment")
 
         sendEmail({
             to: isUserExist.email,
@@ -111,7 +111,13 @@ const createRide = async (payload: IRide, decodedToken: JwtPayload) => {
         })
 
         await session.commitTransaction()
-        return updatedBooking
+
+        const result = await Ride.findById(ride[0]._id)
+            .populate("user", "name email image")
+            .populate("driver", "_id user vehicle licenseNumber experience totalRides")
+            .populate("payment");
+
+        return result;
 
     } catch (error) {
         await session.abortTransaction()

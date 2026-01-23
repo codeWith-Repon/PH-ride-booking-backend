@@ -1,5 +1,5 @@
 import { model, Schema } from "mongoose";
-import { IPayment, PAYMENT_STATUS } from "./payment.interface";
+import { IPayment, PAYMENT_METHOD, PAYMENT_STATUS } from "./payment.interface";
 
 const paymentSchema = new Schema<IPayment>({
     ride: {
@@ -12,6 +12,11 @@ const paymentSchema = new Schema<IPayment>({
         type: String,
         required: true,
         unique: true
+    },
+    paymentMethod: {
+        type: String,
+        enum: Object.values(PAYMENT_METHOD),
+        default: PAYMENT_METHOD.CASH
     },
     status: {
         type: String,

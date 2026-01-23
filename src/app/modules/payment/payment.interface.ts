@@ -10,6 +10,13 @@ export enum PAYMENT_STATUS {
     REFUND = "REFUND"
 }
 
+export enum PAYMENT_METHOD {
+    CASH = "CASH",
+    SSLCOMMERZ = "SSLCOMMERZ",
+    PAYPAL = "PAYPAL",
+    STRIPE = "STRIPE"
+}
+
 export interface IPayment {
     ride: Types.ObjectId,
     transactionId: string,
@@ -17,4 +24,5 @@ export interface IPayment {
     paymentGatewayData?: any,
     invoiceUrl?: string,
     status: PAYMENT_STATUS
+    paymentMethod: PAYMENT_METHOD
 }

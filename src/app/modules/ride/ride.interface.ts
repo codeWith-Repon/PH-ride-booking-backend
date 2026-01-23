@@ -1,5 +1,5 @@
 import { Types } from "mongoose";
-// import { PAYMENT_STATUS } from "../payment/payment.interface";
+import { PAYMENT_METHOD, PAYMENT_STATUS } from "../payment/payment.interface";
 
 
 export enum RIDE_STATUS {
@@ -20,9 +20,10 @@ export interface IRide {
     pickupLocation: string;
     dropLocation: string;
     rideStatus: RIDE_STATUS;
-    // paymentStatus: PAYMENT_STATUS;
+    paymentStatus: PAYMENT_STATUS;
+    paymentMethod: PAYMENT_METHOD;
     fare: number;
-    distance?: number;
+    distance: number;
     rideOtp: number;
     isOtpVerified: boolean;
     startedAt?: Date;
