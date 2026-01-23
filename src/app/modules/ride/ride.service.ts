@@ -15,6 +15,7 @@ import { QueryBuilder } from "../../utils/QueryBuilder";
 import { rideNestedFilterMapping, rideNestedSearchMapping, rideSearchableFields } from "./ride.constant";
 import calculateFare from "../../utils/calculateFare";
 import getTransactionId from "../../utils/transactionId";
+import { deleteRideOtp, getRideOtp, setRideOtp } from "./rideOtp.radis";
 
 const createRide = async (payload: IRide, decodedToken: JwtPayload) => {
     const generateOtp = Math.floor(100000 + Math.random() * 900000)
@@ -100,6 +101,8 @@ const createRide = async (payload: IRide, decodedToken: JwtPayload) => {
                 )
         }
 
+        await setRideOtp(ride[0]._id.toString(), generateOtp, 30 * 60) //30 minutes
+
         sendEmail({
             to: isUserExist.email,
             subject: "Your Ride Request OTP",
@@ -115,7 +118,7 @@ const createRide = async (payload: IRide, decodedToken: JwtPayload) => {
         const result = await Ride.findById(ride[0]._id)
             .populate("user", "name email image")
             .populate("driver", "_id user vehicle licenseNumber experience totalRides")
-            .populate("payment");
+            .populate("payment", "ride transactionId paymentMethod status amount");
 
         return result;
 
@@ -128,6 +131,7 @@ const createRide = async (payload: IRide, decodedToken: JwtPayload) => {
 }
 
 const updateRideStatus = async (payload: Partial<IRide>, decodedToken: JwtPayload, rideId: string) => {
+
     const { role, userId } = decodedToken;
 
     if (payload.rideStatus === RIDE_STATUS.REQUESTED) {
@@ -219,10 +223,6 @@ const updateRideStatus = async (payload: Partial<IRide>, decodedToken: JwtPayloa
     //accept ride logic
     if (payload.rideStatus === RIDE_STATUS.ACCEPTED) {
 
-        if (currentRide.fare === 0) {
-            throw new AppError(400, "Fare is not set for this ride. Please set the fare before accepting the ride.");
-        }
-
         const driverOngoingRide = await Ride.findOne({
             driver: driverInfo._id,
             rideStatus: {
@@ -261,10 +261,19 @@ const updateRideStatus = async (payload: Partial<IRide>, decodedToken: JwtPayloa
     if (payload.rideStatus === RIDE_STATUS.COMPLETED) {
         currentRide.completedAt = new Date()
         await currentRide.save()
+
+        if (currentRide.paymentMethod === PAYMENT_METHOD.CASH) {
+            await Payment.create({
+                ride: currentRide._id,
+                transactionId: getTransactionId(PAYMENT_METHOD.CASH),
+                amount: currentRide.fare,
+                paymentMethod: PAYMENT_METHOD.CASH,
+                status: PAYMENT_STATUS.PAID
+            })
+        }
     }
 
     return await Ride.findOneAndUpdate({ _id: rideId, driver: driverInfo._id }, payload, { new: true })
-
 }
 
 const setRideFare = async (payload: { fare: number }, decodedToken: JwtPayload, rideId: string) => {
@@ -314,15 +323,15 @@ const setRideFare = async (payload: { fare: number }, decodedToken: JwtPayload, 
 
 }
 
-const otpVerify = async (payload: { otp: string }, decodedToken: JwtPayload) => {
-    const { userId, role } = decodedToken
+const otpVerify = async (payload: { otp: string }, decodedToken: JwtPayload, rideId: string) => {
+    const { role } = decodedToken
+
 
     if ([Role.SUPER_ADMIN, Role.ADMIN].includes(role)) {
         throw new AppError(400, "You are not allowed to verify ride OTP!")
     }
 
-    const rideInfo = await Ride.findOne({ user: userId, rideStatus: { $nin: [RIDE_STATUS.COMPLETED, RIDE_STATUS.CANCELLED, RIDE_STATUS.REJECTED] } })
-
+    const rideInfo = await Ride.findById({ _id: rideId })
 
     if (!rideInfo) {
         throw new AppError(400, "No ongoing ride found!")
@@ -332,7 +341,13 @@ const otpVerify = async (payload: { otp: string }, decodedToken: JwtPayload) => 
         throw new AppError(400, "OTP is required");
     }
 
-    if (rideInfo.rideOtp !== Number(payload.otp)) {
+    const rideOtp = await getRideOtp(rideInfo._id.toString())
+
+    if (!rideOtp) {
+        throw new AppError(400, "OTP expired or not found");
+    }
+
+    if (rideOtp.toString() !== payload.otp.toString()) {
         throw new AppError(400, "Invalid OTP")
     }
 
@@ -342,6 +357,7 @@ const otpVerify = async (payload: { otp: string }, decodedToken: JwtPayload) => 
 
     rideInfo.isOtpVerified = true;
     await rideInfo.save();
+    await deleteRideOtp(rideInfo._id.toString());
 
     return
 }

@@ -24,7 +24,6 @@ export interface IRide {
     paymentMethod: PAYMENT_METHOD;
     fare: number;
     distance: number;
-    rideOtp: number;
     isOtpVerified: boolean;
     startedAt?: Date;
     completedAt?: Date;

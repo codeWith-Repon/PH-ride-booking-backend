@@ -49,7 +49,7 @@ const setRideFare = catchAsync(async (req: Request, res: Response, next: NextFun
 const otpVerify = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
     const payload = req.body
     const decodedToken = req.user as JwtPayload
-    const result = await RideServices.otpVerify(payload, decodedToken)
+    const result = await RideServices.otpVerify(payload, decodedToken, req.params.rideId)
 
     sendResponse(res, {
         success: true,

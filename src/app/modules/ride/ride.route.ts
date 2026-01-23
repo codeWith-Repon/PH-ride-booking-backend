@@ -13,7 +13,7 @@ router.post("/book",
     checkAuth(...Object.values(Role)),
     rideController.createRide)
 
-router.post("/verify-otp",
+router.post("/verify-otp/:rideId",
     checkAuth(...Object.values(Role)),
     rideController.otpVerify)
 

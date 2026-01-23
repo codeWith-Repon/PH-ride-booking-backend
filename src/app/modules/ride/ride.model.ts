@@ -50,10 +50,6 @@ const rideSchema = new Schema<IRide>({
         type: Number,
         default: 0
     },
-    rideOtp: {
-        type: Number,
-        default: null
-    },
     isOtpVerified: {
         type: Boolean,
         default: false
