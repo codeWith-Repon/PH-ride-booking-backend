@@ -12,7 +12,7 @@ export const rideSearchableFields: string[] = [
 // 2. Define the filterable fields mapping
 export const rideFilterableFields: Record<string, string> = {
     rideStatus: "rideStatus", 
-    paymentStatus: "payment.status", 
+    paymentStatus: "paymentStatus", 
     userEmail: "user.email", 
 };
 

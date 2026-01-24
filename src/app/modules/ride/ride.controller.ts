@@ -32,20 +32,6 @@ const updateRideStatus = catchAsync(async (req: Request, res: Response, next: Ne
     })
 })
 
-const setRideFare = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
-    const payload = req.body
-    const { rideId } = req.params
-    const decodedToken = req.user as JwtPayload
-    const result = await RideServices.setRideFare(payload, decodedToken, rideId)
-
-    sendResponse(res, {
-        success: true,
-        statusCode: 200,
-        message: "Ride Fare Set Successfully",
-        data: result
-    })
-})
-
 const otpVerify = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
     const payload = req.body
     const decodedToken = req.user as JwtPayload
@@ -117,6 +103,5 @@ export const rideController = {
     getAllRide,
     getSingleRide,
     getRideHistory,
-    getCurrentRide,
-    setRideFare
+    getCurrentRide
 }

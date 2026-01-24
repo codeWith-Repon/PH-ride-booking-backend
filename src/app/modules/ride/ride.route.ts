@@ -29,9 +29,6 @@ router.get("/history",
     checkAuth(Role.DRIVER, Role.RIDER),
     rideController.getRideHistory)
 
-router.post("/set-fare/:rideId",
-    checkAuth(...Object.values(Role)),
-    rideController.setRideFare)
 
 router.post("/update-status/:rideId",
     validateRequest(updateRideStatusZodSchema),
@@ -39,7 +36,7 @@ router.post("/update-status/:rideId",
     rideController.updateRideStatus)
 
 router.get("/:rideId",
-    checkAuth(Role.ADMIN, Role.SUPER_ADMIN),
+    checkAuth(...Object.values(Role)),
     rideController.getSingleRide)
 
 

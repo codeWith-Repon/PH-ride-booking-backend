@@ -50,7 +50,7 @@ const createRide = async (payload: IRide, decodedToken: JwtPayload) => {
 
         const checkRiderOngoingRide = await Ride.findOne({
             user: userId,
-            status: {
+            rideStatus: {
                 $in: [RIDE_STATUS.ACCEPTED, RIDE_STATUS.PICKED_UP, RIDE_STATUS.IN_TRANSIT]
             }
         })
@@ -61,7 +61,7 @@ const createRide = async (payload: IRide, decodedToken: JwtPayload) => {
 
         const checkDriverOngoingRide = await Ride.findOne({
             driver,
-            status: {
+            rideStatus: {
                 $in: [RIDE_STATUS.ACCEPTED, RIDE_STATUS.PICKED_UP, RIDE_STATUS.IN_TRANSIT]
             }
         })
@@ -276,53 +276,6 @@ const updateRideStatus = async (payload: Partial<IRide>, decodedToken: JwtPayloa
     return await Ride.findOneAndUpdate({ _id: rideId, driver: driverInfo._id }, payload, { new: true })
 }
 
-const setRideFare = async (payload: { fare: number }, decodedToken: JwtPayload, rideId: string) => {
-
-    const { userId, role } = decodedToken
-
-    if (!rideId) {
-        throw new AppError(400, "Ride Id is required")
-    }
-
-    if (role !== Role.DRIVER) {
-        throw new AppError(403, "You can't set the fare!")
-    }
-
-    const driverInfo = await Driver.findOne({ user: userId })
-
-    if (!driverInfo) {
-        throw new AppError(404, "Driver profile not found!")
-    }
-
-    if ([DRIVER_STATUS.PENDING, DRIVER_STATUS.SUSPENDED].includes(driverInfo.status)) {
-        const reason =
-            driverInfo.status === DRIVER_STATUS.PENDING
-                ? "pending approval" :
-                "suspended"
-
-        throw new AppError(403, `Driver is ${reason} and can not set the fare.`);
-    }
-
-    const currentRide = await Ride.findOne({
-        _id: rideId,
-        driver: driverInfo._id,
-        rideStatus: {
-            $nin: [RIDE_STATUS.REJECTED, RIDE_STATUS.CANCELLED, RIDE_STATUS.COMPLETED]
-        }
-    })
-
-    if (!currentRide) {
-        throw new AppError(400, "No ongoing ride found for driver")
-    }
-
-    currentRide.fare = payload.fare
-
-    await currentRide.save()
-
-    return currentRide
-
-}
-
 const otpVerify = async (payload: { otp: string }, decodedToken: JwtPayload, rideId: string) => {
     const { role } = decodedToken
 
@@ -372,7 +325,7 @@ const getAllRide = async (query: Record<string, string>) => {
         .sort()
         .fields()
         .paginate()
-        .populate("user", "name email _id")
+        .populate("user", "name email image _id")
         .populate("driver", "user vehicle licenseNumber experience totalRides availabilityStatus")
         .populate("payment", "status amount transactionId")
 
@@ -387,7 +340,11 @@ const getAllRide = async (query: Record<string, string>) => {
 }
 
 const getSingleRide = async (rideId: string) => {
-    const ride = await Ride.findById(rideId)
+    const ride = await Ride
+        .findById(rideId)
+        .populate("user", "name email image _id")
+        .populate("driver", "user vehicle licenseNumber experience totalRides availabilityStatus")
+        .populate("payment", "status amount transactionId")
 
     return ride
 }
@@ -406,8 +363,9 @@ const getRideHistory = async (decodedToken: JwtPayload) => {
         const rides = await Ride.find({ driver: driverInfo._id })
 
         if (rides.length === 0) {
-            throw new AppError(404, "No ride history found for driver!");
+            throw new AppError(404, "No ride history found for rider!");
         }
+
         return rides
     }
 
@@ -458,7 +416,6 @@ const getCurrentRide = async (decodedToken: JwtPayload) => {
 export const RideServices = {
     createRide,
     updateRideStatus,
-    setRideFare,
     otpVerify,
     getAllRide,
     getSingleRide,
