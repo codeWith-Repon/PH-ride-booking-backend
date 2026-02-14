@@ -353,16 +353,24 @@ const getAllRide = async (query: Record<string, string>) => {
     }
 }
 
+
 const getSingleRide = async (rideId: string) => {
     const ride = await Ride
         .findById(rideId)
         .populate("user", "name email image _id")
         .populate("driver", "user vehicle licenseNumber experience totalRides availabilityStatus")
+        .populate({
+            path: "driver",
+            select: "user licenseNumber experience totalRides",
+            populate: {
+                path: "user",
+                select: "name email image"
+            }
+        })
         .populate("payment", "status amount transactionId")
 
     return ride
 }
-
 const getRideHistory = async (decodedToken: JwtPayload) => {
 
     const { userId, role } = decodedToken
