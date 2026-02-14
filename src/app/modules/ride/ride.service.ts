@@ -377,7 +377,6 @@ const getRideHistory = async (decodedToken: JwtPayload) => {
         const rides = await Ride
             .find({ driver: driverInfo._id })
             .populate("user", "name email image")
-            .sort({ createdAt: -1 })
 
         if (rides.length === 0) {
             throw new AppError(404, "No ride history found for rider!");
@@ -391,14 +390,12 @@ const getRideHistory = async (decodedToken: JwtPayload) => {
             .find({ user: userId })
             .populate({
                 path: "driver",
-                select: 'user licenseNumber experience',
+                select: "user licenseNumber experience totalRides",
                 populate: {
-                    path: 'user',
-                    select: 'name email image'
+                    path: "user",
+                    select: "name email image"
                 }
             })
-            .sort({ createdAt: -1 })
-
         if (rides.length === 0) {
             throw new AppError(404, "No ride history found for rider!");
         }
@@ -425,7 +422,6 @@ const getCurrentRide = async (decodedToken: JwtPayload) => {
         filter.user = userId
     }
 
-
     let currentRide
 
     if (role === Role.RIDER) {
@@ -435,14 +431,16 @@ const getCurrentRide = async (decodedToken: JwtPayload) => {
                 select: "user licenseNumber experience totalRides",
                 populate: {
                     path: "user",
-                    select: "name email image"
+                    select: "name email image _id"
                 }
             })
             .populate("payment", "status amount transactionId")
     } else {
-        currentRide = await Ride
-            .findOne(filter)
-            .populate("user", "name email image")
+        currentRide = await Ride.findOne(filter)
+            .populate({
+                path: "user",
+                select: "name email image _id"
+            })
             .populate("payment", "status amount transactionId")
     }
 
@@ -453,7 +451,6 @@ const getCurrentRide = async (decodedToken: JwtPayload) => {
 
     return currentRide
 }
-
 
 export const RideServices = {
     createRide,
