@@ -33,6 +33,7 @@
     "passport-google-oauth20": "^2.0.0",
     "passport-local": "^1.0.0",
     "redis": "^5.8.1",
+    "socket.io": "^4.8.3",
     "zod": "^4.0.11"
   },
   "devDependencies": {
@@ -41,19 +42,20 @@
     "@types/cookie-parser": "^1.4.9",
     "@types/cors": "^2.8.19",
     "@types/dotenv": "^6.1.1",
+    "@types/ejs": "^3.1.5",
     "@types/express": "^5.0.3",
     "@types/express-session": "^1.18.2",
     "@types/jsonwebtoken": "^9.0.10",
     "@types/multer": "^2.0.0",
+    "@types/nodemailer": "^7.0.0",
     "@types/passport": "^1.0.17",
     "@types/passport-google-oauth20": "^2.0.16",
     "@types/passport-local": "^1.0.38",
+    "@types/socket.io": "^3.0.1",
     "eslint": "^9.32.0",
     "eslint-plugin-unused-imports": "^4.1.4",
     "ts-node-dev": "^2.0.0",
     "typescript": "^5.8.3",
-    "@types/ejs": "^3.1.5",
-    "@types/nodemailer": "^7.0.0",
     "typescript-eslint": "^8.38.0"
   }
 }

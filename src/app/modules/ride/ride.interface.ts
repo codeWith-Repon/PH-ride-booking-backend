@@ -14,6 +14,7 @@ export enum RIDE_STATUS {
 
 
 export interface IRide {
+    _id?: Types.ObjectId;
     user: Types.ObjectId;
     driver: Types.ObjectId;
     payment?: Types.ObjectId;

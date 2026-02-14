@@ -1,4 +1,4 @@
-import { model, Schema } from "mongoose";
+import { HydratedDocument, model, Schema } from "mongoose";
 import { IRide, RIDE_STATUS } from "./ride.interface";
 import { PAYMENT_METHOD, PAYMENT_STATUS } from "../payment/payment.interface";
 
@@ -65,3 +65,5 @@ const rideSchema = new Schema<IRide>({
 })
 
 export const Ride = model<IRide>("Ride", rideSchema)
+
+export type RideDocument = HydratedDocument<IRide>;

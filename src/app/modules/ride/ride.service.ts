@@ -1,9 +1,10 @@
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { JwtPayload } from "jsonwebtoken";
 import AppError from "../../errorHelpers/AppError";
 import { Driver } from "../driver/driver.model";
 import { IRide, RIDE_STATUS } from "./ride.interface";
-import { Ride } from "./ride.model";
+import { Ride, RideDocument } from "./ride.model";
 import { Role } from "../user/user.interface";
 import { DRIVER_STATUS } from "../driver/driver.interface";
 import { Payment } from "../payment/payment.model";
@@ -16,6 +17,7 @@ import { rideNestedFilterMapping, rideNestedSearchMapping, rideSearchableFields 
 import calculateFare from "../../utils/calculateFare";
 import getTransactionId from "../../utils/transactionId";
 import { deleteRideOtp, getRideOtp, setRideOtp } from "./rideOtp.radis";
+
 
 const createRide = async (payload: IRide, decodedToken: JwtPayload) => {
     const generateOtp = Math.floor(100000 + Math.random() * 900000)
@@ -115,6 +117,7 @@ const createRide = async (payload: IRide, decodedToken: JwtPayload) => {
 
         await session.commitTransaction()
 
+
         const result = await Ride.findById(ride[0]._id)
             .populate("user", "name email image")
             .populate("driver", "_id user vehicle licenseNumber experience totalRides")
@@ -129,152 +132,162 @@ const createRide = async (payload: IRide, decodedToken: JwtPayload) => {
         session.endSession()
     }
 }
-
 const updateRideStatus = async (payload: Partial<IRide>, decodedToken: JwtPayload, rideId: string) => {
-
     const { role, userId } = decodedToken;
 
     if (payload.rideStatus === RIDE_STATUS.REQUESTED) {
-        throw new AppError(400, "Ride is already requested")
+        throw new AppError(400, "Ride is already requested");
     }
 
     if (!rideId) {
-        throw new AppError(400, "Ride Id is required")
+        throw new AppError(400, "Ride Id is required");
     }
 
-    //Rider logic
+    let ride: RideDocument | null = null;
+
+    // ────────────────────────────────────────────────
+    // Rider can only cancel
+    // ────────────────────────────────────────────────
     if (role === Role.RIDER) {
-
-        if (payload.rideStatus === RIDE_STATUS.CANCELLED
-        ) {
-            const currentRide = await Ride.findOne({ _id: rideId, user: userId })
-
-            if (!currentRide) {
-                throw new AppError(404, "No active ride found to update.")
-            }
-
-            if (currentRide.rideStatus === RIDE_STATUS.CANCELLED && payload.rideStatus === RIDE_STATUS.CANCELLED) {
-                throw new AppError(400, "Ride is already cancelled.")
-            }
-
-            if (
-                currentRide.rideStatus === RIDE_STATUS.ACCEPTED ||
-                currentRide.rideStatus === RIDE_STATUS.PICKED_UP ||
-                currentRide.rideStatus === RIDE_STATUS.IN_TRANSIT
-            ) {
-                throw new AppError(400, "Ride is already accepted or ongoing. You can't cancel now.")
-            }
-
-            const session = await mongoose.startSession()
-
-            session.startTransaction()
-
-            try {
-
-                const updatedRide = await Ride.findByIdAndUpdate(rideId, payload, { new: true, runValidators: true, session })
-                await Payment.findOneAndUpdate({ ride: currentRide._id }, { status: PAYMENT_STATUS.CANCELLED }, { session })
-                await session.commitTransaction()
-
-                return updatedRide
-            } catch (error) {
-                await session.abortTransaction()
-                throw error
-            } finally {
-                session.endSession()
-            }
-
-        }
-        throw new AppError(403, "Rider can only cancel ride!")
-
-    }
-
-
-    if (role !== Role.DRIVER) {
-        throw new AppError(403, "You can't change ride status!")
-    }
-
-    const driverInfo = await Driver.findOne({ user: userId })
-
-    if (!driverInfo) {
-        throw new AppError(404, "Driver profile not found!")
-    }
-
-    if ([DRIVER_STATUS.PENDING, DRIVER_STATUS.SUSPENDED].includes(driverInfo.status)) {
-        const reason =
-            driverInfo.status === DRIVER_STATUS.PENDING
-                ? "pending approval" :
-                "suspended"
-
-        throw new AppError(403, `Driver is ${reason} and cannot accept rides.`);
-    }
-
-
-    const currentRide = await Ride.findById(rideId)
-
-    if (!currentRide) {
-        throw new AppError(400, "No ongoing ride found for driver")
-    }
-
-    if (currentRide.rideStatus === RIDE_STATUS.COMPLETED) {
-        throw new AppError(403, "Completed rides cannot be modified.");
-    }
-
-
-    //accept ride logic
-    if (payload.rideStatus === RIDE_STATUS.ACCEPTED) {
-
-        const driverOngoingRide = await Ride.findOne({
-            driver: driverInfo._id,
-            rideStatus: {
-                $in: [RIDE_STATUS.ACCEPTED, RIDE_STATUS.PICKED_UP, RIDE_STATUS.IN_TRANSIT]
-            }
-        })
-
-        if (driverOngoingRide) {
-            throw new AppError(400, "You already have an ongoing ride. Complete it before accepting a new one.");
+        if (payload.rideStatus !== RIDE_STATUS.CANCELLED) {
+            throw new AppError(403, "Rider can only cancel ride!");
         }
 
-        const updatedRide = await Ride.findOneAndUpdate(
-            { _id: rideId, rideStatus: RIDE_STATUS.REQUESTED },
-            { $set: { rideStatus: RIDE_STATUS.ACCEPTED, driver: driverInfo._id } },
-            { new: true }
-        )
+        ride = await Ride.findOne({ _id: rideId, user: userId });
 
-        return updatedRide
-    }
+        if (!ride) {
+            throw new AppError(404, "No active ride found to update.");
+        }
 
-    /// picked up / In transit /completed
-    if (payload.rideStatus === RIDE_STATUS.PICKED_UP ||
-        payload.rideStatus === RIDE_STATUS.IN_TRANSIT ||
-        payload.rideStatus === RIDE_STATUS.COMPLETED
-    ) {
-        if (!currentRide.isOtpVerified) {
-            throw new AppError(400, "OTP not verified. Can't start/complete the ride.");
+        if (ride.rideStatus === RIDE_STATUS.CANCELLED) {
+            throw new AppError(400, "Ride is already cancelled.");
+        }
+
+        const restrictedStatuses = [RIDE_STATUS.ACCEPTED, RIDE_STATUS.PICKED_UP, RIDE_STATUS.IN_TRANSIT];
+        if (restrictedStatuses.includes(ride.rideStatus as RIDE_STATUS)) {
+            throw new AppError(400, "Ride is already accepted or ongoing. You can't cancel now.");
+        }
+
+        const session = await mongoose.startSession();
+        session.startTransaction();
+
+        try {
+            ride = await Ride.findByIdAndUpdate(
+                rideId,
+                { rideStatus: RIDE_STATUS.CANCELLED },
+                { new: true, runValidators: true, session }
+            );
+
+            await Payment.findOneAndUpdate(
+                { ride: ride!._id },
+                { status: PAYMENT_STATUS.CANCELLED },
+                { session }
+            );
+
+            await session.commitTransaction();
+        } catch (error) {
+            await session.abortTransaction();
+            throw error;
+        } finally {
+            session.endSession();
         }
     }
 
-    if (payload.rideStatus === RIDE_STATUS.PICKED_UP) {
-        currentRide.startedAt = new Date()
-        await currentRide.save()
-    }
+    // ────────────────────────────────────────────────
+    // Driver logic
+    // ────────────────────────────────────────────────
+    else if (role === Role.DRIVER) {
+        const driverInfo = await Driver.findOne({ user: userId });
 
-    if (payload.rideStatus === RIDE_STATUS.COMPLETED) {
-        currentRide.completedAt = new Date()
-        await currentRide.save()
+        if (!driverInfo) {
+            throw new AppError(404, "Driver profile not found!");
+        }
 
-        if (currentRide.paymentMethod === PAYMENT_METHOD.CASH) {
-            await Payment.create({
-                ride: currentRide._id,
-                transactionId: getTransactionId(PAYMENT_METHOD.CASH),
-                amount: currentRide.fare,
-                paymentMethod: PAYMENT_METHOD.CASH,
-                status: PAYMENT_STATUS.PAID
-            })
+        if ([DRIVER_STATUS.PENDING, DRIVER_STATUS.SUSPENDED].includes(driverInfo.status)) {
+            const reason = driverInfo.status === DRIVER_STATUS.PENDING ? "pending approval" : "suspended";
+            throw new AppError(403, `Driver is ${reason} and cannot accept rides.`);
+        }
+
+        ride = await Ride.findById(rideId);
+
+        if (!ride) {
+            throw new AppError(404, "No ongoing ride found for driver");
+        }
+
+        if (ride.rideStatus === RIDE_STATUS.COMPLETED) {
+            throw new AppError(403, "Completed rides cannot be modified.");
+        }
+
+        // Case: Accept ride
+        if (payload.rideStatus === RIDE_STATUS.ACCEPTED) {
+            if (ride.rideStatus !== RIDE_STATUS.REQUESTED) {
+                throw new AppError(400, "Ride is no longer available to accept");
+            }
+
+            const driverOngoingRide = await Ride.findOne({
+                driver: driverInfo._id,
+                rideStatus: { $in: [RIDE_STATUS.ACCEPTED, RIDE_STATUS.PICKED_UP, RIDE_STATUS.IN_TRANSIT] }
+            });
+
+            if (driverOngoingRide) {
+                throw new AppError(400, "You already have an ongoing ride.");
+            }
+
+            ride = await Ride.findOneAndUpdate(
+                { _id: rideId, rideStatus: RIDE_STATUS.REQUESTED },
+                { $set: { rideStatus: RIDE_STATUS.ACCEPTED, driver: driverInfo._id } },
+                { new: true, runValidators: true }
+            );
+        }
+
+        // Case: Reject ride
+        else if (payload.rideStatus === RIDE_STATUS.REJECTED) {
+            ride = await Ride.findOneAndUpdate(
+                { _id: rideId, rideStatus: { $in: [RIDE_STATUS.REQUESTED, RIDE_STATUS.ACCEPTED] } },
+                { $set: { rideStatus: RIDE_STATUS.REJECTED, driver: driverInfo._id } },
+                { new: true, runValidators: true }
+            );
+        }
+
+        // Case: Progress ride (PICKED_UP, IN_TRANSIT, COMPLETED)
+        else if ([RIDE_STATUS.PICKED_UP, RIDE_STATUS.IN_TRANSIT, RIDE_STATUS.COMPLETED].includes(payload.rideStatus as RIDE_STATUS)) {
+            if (!ride.isOtpVerified) {
+                throw new AppError(400, "OTP not verified. Can't start/complete the ride.");
+            }
+
+            if (payload.rideStatus === RIDE_STATUS.PICKED_UP) {
+                ride.startedAt = new Date();
+            }
+
+            if (payload.rideStatus === RIDE_STATUS.COMPLETED) {
+                ride.completedAt = new Date();
+
+                if (ride.paymentMethod === PAYMENT_METHOD.CASH) {
+                    await Payment.create({
+                        ride: ride._id,
+                        transactionId: getTransactionId(PAYMENT_METHOD.CASH),
+                        amount: ride.fare,
+                        paymentMethod: PAYMENT_METHOD.CASH,
+                        status: PAYMENT_STATUS.PAID
+                    });
+                }
+            }
+
+            ride.rideStatus = payload.rideStatus as RIDE_STATUS;
+            await ride.save({ validateBeforeSave: true });
+        }
+
+        else {
+            throw new AppError(400, "Invalid status transition for driver");
         }
     }
 
-    return await Ride.findOneAndUpdate({ _id: rideId, driver: driverInfo._id }, payload, { new: true })
-}
+    else {
+        throw new AppError(403, "You can't change ride status!");
+    }
+
+    return ride;
+};
 
 const otpVerify = async (payload: { otp: string }, decodedToken: JwtPayload, rideId: string) => {
     const { role } = decodedToken
@@ -309,6 +322,7 @@ const otpVerify = async (payload: { otp: string }, decodedToken: JwtPayload, rid
     }
 
     rideInfo.isOtpVerified = true;
+
     await rideInfo.save();
     await deleteRideOtp(rideInfo._id.toString());
 
@@ -360,7 +374,10 @@ const getRideHistory = async (decodedToken: JwtPayload) => {
             throw new AppError(404, "Driver profile not found!")
         }
 
-        const rides = await Ride.find({ driver: driverInfo._id })
+        const rides = await Ride
+            .find({ driver: driverInfo._id })
+            .populate("user", "name email image")
+            .sort({ createdAt: -1 })
 
         if (rides.length === 0) {
             throw new AppError(404, "No ride history found for rider!");
@@ -370,7 +387,17 @@ const getRideHistory = async (decodedToken: JwtPayload) => {
     }
 
     if (role === Role.RIDER) {
-        const rides = await Ride.find({ user: userId })
+        const rides = await Ride
+            .find({ user: userId })
+            .populate({
+                path: "driver",
+                select: 'user licenseNumber experience',
+                populate: {
+                    path: 'user',
+                    select: 'name email image'
+                }
+            })
+            .sort({ createdAt: -1 })
 
         if (rides.length === 0) {
             throw new AppError(404, "No ride history found for rider!");
@@ -399,10 +426,25 @@ const getCurrentRide = async (decodedToken: JwtPayload) => {
     }
 
 
-    const currentRide = await Ride.findOne(filter)
-        .populate("user", "name email _id")
-        .populate("driver", "user vehicle licenseNumber experience totalRides availabilityStatus")
-        .populate("payment", "status amount transactionId")
+    let currentRide
+
+    if (role === Role.RIDER) {
+        currentRide = await Ride.findOne(filter)
+            .populate({
+                path: "driver",
+                select: "user licenseNumber experience totalRides",
+                populate: {
+                    path: "user",
+                    select: "name email image"
+                }
+            })
+            .populate("payment", "status amount transactionId")
+    } else {
+        currentRide = await Ride
+            .findOne(filter)
+            .populate("user", "name email image")
+            .populate("payment", "status amount transactionId")
+    }
 
 
     if (!currentRide) {
