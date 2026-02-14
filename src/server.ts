@@ -5,9 +5,10 @@ import app from './app';
 import { envVars } from './app/config/env';
 import { seedSuperAdmin } from './app/utils/seedSuperAdmin';
 import { connectRedis } from './app/config/radis.config';
-
+import dns from 'dns';
 
 let server: Server;
+dns.setServers(['1.1.1.1', '8.8.8.8']);
 
 const startServer = async () => {
     try {

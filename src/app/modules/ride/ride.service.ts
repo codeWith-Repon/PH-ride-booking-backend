@@ -17,6 +17,7 @@ import { rideNestedFilterMapping, rideNestedSearchMapping, rideSearchableFields 
 import calculateFare from "../../utils/calculateFare";
 import getTransactionId from "../../utils/transactionId";
 import { deleteRideOtp, getRideOtp, setRideOtp } from "./rideOtp.radis";
+import { NotificationServices } from "../notification/notification.service";
 
 
 const createRide = async (payload: IRide, decodedToken: JwtPayload) => {
@@ -83,6 +84,13 @@ const createRide = async (payload: IRide, decodedToken: JwtPayload) => {
                 paymentStatus: PAYMENT_STATUS.UNPAID
             }
         ], { session })
+
+        await NotificationServices.createNotification({
+            recipient: isDriverExist?.user,
+            ride: ride[0]._id,
+            title: "Ride Request",
+            message: "You have a new ride request"
+        });
 
         let payment = null;
 
@@ -184,6 +192,17 @@ const updateRideStatus = async (payload: Partial<IRide>, decodedToken: JwtPayloa
                 { session }
             );
 
+            if (ride?.driver) {
+                const driverProfile = await Driver.findById(ride.driver);
+
+                await NotificationServices.createNotification({
+                    recipient: driverProfile?.user,
+                    ride: ride._id,
+                    title: "Ride Cancelled",
+                    message: "The rider has cancelled the ride request."
+                });
+            }
+
             await session.commitTransaction();
         } catch (error) {
             await session.abortTransaction();
@@ -238,6 +257,13 @@ const updateRideStatus = async (payload: Partial<IRide>, decodedToken: JwtPayloa
                 { $set: { rideStatus: RIDE_STATUS.ACCEPTED, driver: driverInfo._id } },
                 { new: true, runValidators: true }
             );
+
+            await NotificationServices.createNotification({
+                recipient: ride?.user,
+                ride: ride?._id,
+                title: "Ride Accepted",
+                message: "A driver has accepted your ride request and is on the way!"
+            });
         }
 
         // Case: Reject ride
@@ -247,6 +273,13 @@ const updateRideStatus = async (payload: Partial<IRide>, decodedToken: JwtPayloa
                 { $set: { rideStatus: RIDE_STATUS.REJECTED, driver: driverInfo._id } },
                 { new: true, runValidators: true }
             );
+
+            await NotificationServices.createNotification({
+                recipient: ride?.user,
+                ride: ride?._id,
+                title: "Ride Rejected",
+                message: "The driver has rejected your ride request."
+            });
         }
 
         // Case: Progress ride (PICKED_UP, IN_TRANSIT, COMPLETED)
@@ -257,6 +290,13 @@ const updateRideStatus = async (payload: Partial<IRide>, decodedToken: JwtPayloa
 
             if (payload.rideStatus === RIDE_STATUS.PICKED_UP) {
                 ride.startedAt = new Date();
+
+                await NotificationServices.createNotification({
+                    recipient: ride.user,
+                    ride: ride._id,
+                    title: "Ride Started",
+                    message: "Your ride has officially started. Safe travels!"
+                });
             }
 
             if (payload.rideStatus === RIDE_STATUS.COMPLETED) {
@@ -271,6 +311,13 @@ const updateRideStatus = async (payload: Partial<IRide>, decodedToken: JwtPayloa
                         status: PAYMENT_STATUS.PAID
                     });
                 }
+
+                await NotificationServices.createNotification({
+                    recipient: ride.user,
+                    ride: ride._id,
+                    title: "Ride Completed",
+                    message: `You have reached your destination. Fare: ${ride.fare} TK.`
+                });
             }
 
             ride.rideStatus = payload.rideStatus as RIDE_STATUS;
