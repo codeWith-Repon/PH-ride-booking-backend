@@ -1,4 +1,5 @@
 import express, { Request, Response } from "express"
+import helmet from "helmet"
 import cookieParser from "cookie-parser"
 import cors from "cors"
 import notFound from "./app/middlewares/notFound"
@@ -12,6 +13,7 @@ import { globalLimiter } from "./app/config/rateLimit.config"
 
 const app = express()
 
+app.use(helmet())
 app.use(expressSession({
     secret: "Your secret",
     resave: false,
