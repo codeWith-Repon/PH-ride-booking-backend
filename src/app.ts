@@ -8,6 +8,7 @@ import expressSession from "express-session"
 import passport from "passport"
 import "./app/config/passport"
 import { envVars } from "./app/config/env"
+import { globalLimiter } from "./app/config/rateLimit.config"
 
 const app = express()
 
@@ -26,6 +27,7 @@ app.use(cors({
     credentials: true
 }))
 
+app.use(globalLimiter)
 app.use("/api/v1", router)
 
 app.get("/", (req: Request, res: Response) => {

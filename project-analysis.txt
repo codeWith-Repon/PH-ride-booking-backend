@@ -1,0 +1,34 @@
+=== MISSING FEATURES ===
+
+Feature                        | Why It Matters
+-------------------------------|------------------------------------------------
+Real-time GPS tracking         | Live location updates during rides
+Driver-rider matching algo     | No proximity-based matching (manual selection)
+Surge/dynamic pricing          | Fare should reflect demand & time of day
+Rating & review system         | No way to rate drivers or riders
+Working payment gateway        | Payments are stubs — no real money movement
+Refund flow                    | Status exists but logic doesn't
+Admin dashboard endpoints      | No endpoints to approve/suspend drivers
+Ride cancellation policy       | No cancellation fee or limit logic
+Scheduled/advance booking      | No future-dated ride booking
+Driver earnings breakdown      | totalEarnings is a number, no per-ride history
+Ride receipt / invoice         | invoiceUrl in Payment model, never generated
+Push notifications             | Only in-app DB notifications, no FCM/APNs
+Phone number verification      | Phone stored but never verified via SMS OTP
+Multi-stop rides               | No intermediate stops support
+Promo codes / discounts        | No coupon or promotional pricing
+Automated tests                | No CI safety net for any business logic
+API documentation              | No Swagger/OpenAPI spec
+Rate limiting                  | Brute-force protection missing on auth endpoints
+
+
+=== PRIORITY FIXES ===
+
+1. Rename radis.config.ts -> redis.config.ts
+2. Add rate limiting (express-rate-limit)
+3. Add helmet.js for security headers
+4. Write tests for auth and ride flow
+5. Implement real payment gateway (start with SSLCommerz)
+6. Replace string locations with GeoJSON coordinates
+7. Add request logging (Morgan or Winston)
+8. Add /health endpoint
