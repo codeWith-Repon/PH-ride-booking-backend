@@ -11,6 +11,11 @@ export enum DRIVER_STATUS {
     SUSPENDED = "SUSPENDED"
 }
 
+export interface IDriverGeoPoint {
+    type: "Point";
+    coordinates: [number, number]; // [lng, lat]
+}
+
 export interface IDriver {
     user: Types.ObjectId;
     vehicle: Types.ObjectId;
@@ -20,4 +25,8 @@ export interface IDriver {
     totalEarnings: number;
     availabilityStatus: AVAILABILITY_STATUS;
     status: DRIVER_STATUS;
+    currentLocation?: IDriverGeoPoint;
+    lastLocationAt?: Date;
+    rating?: number;
+    ratingCount?: number;
 }

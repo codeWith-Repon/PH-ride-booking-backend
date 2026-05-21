@@ -41,9 +41,32 @@ const driverSchema = new Schema<IDriver>({
         type: String,
         enum: Object.values(DRIVER_STATUS),
         default: DRIVER_STATUS.PENDING
-    }
+    },
+    currentLocation: {
+        type: {
+            type: String,
+            enum: ["Point"],
+            default: "Point"
+        },
+        coordinates: {
+            type: [Number],
+            validate: {
+                validator: (v: number[]) =>
+                    !v || (Array.isArray(v) &&
+                        v.length === 2 &&
+                        v[0] >= -180 && v[0] <= 180 &&
+                        v[1] >= -90 && v[1] <= 90),
+                message: "coordinates must be [lng, lat] within valid ranges"
+            }
+        }
+    },
+    lastLocationAt: { type: Date },
+    rating: { type: Number, min: 1, max: 5, default: 5 },
+    ratingCount: { type: Number, default: 0 }
 }, {
     timestamps: true
 })
+
+driverSchema.index({ currentLocation: "2dsphere" })
 
 export const Driver = model<IDriver>("Driver", driverSchema)
