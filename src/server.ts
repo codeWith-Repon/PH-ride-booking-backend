@@ -1,10 +1,11 @@
 /* eslint-disable no-console */
-import { Server } from 'http'
+import http, { Server } from 'http'
 import mongoose from 'mongoose';
 import app from './app';
 import { envVars } from './app/config/env';
 import { seedSuperAdmin } from './app/utils/seedSuperAdmin';
 import { connectRedis } from './app/config/radis.config';
+import { initSocket } from './app/socket';
 import dns from 'dns';
 
 let server: Server;
@@ -16,7 +17,10 @@ const startServer = async () => {
 
         console.log('connected to DB!')
 
-        server = app.listen(envVars.PORT, () => {
+        server = http.createServer(app);
+        initSocket(server);
+
+        server.listen(envVars.PORT, () => {
             console.log(`Server is listening to port ${envVars.PORT}`)
         })
     } catch (error) {
