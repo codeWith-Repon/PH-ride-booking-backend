@@ -4,8 +4,12 @@ import { PAYMENT_METHOD } from "../payment/payment.interface";
 
 export const createRideZodSchema = z.object({
     // user: z.string(),
-    driver: z.string(),
+    driver: z.string().optional(),
     pickupLocation: z.string(),
+    pickupCoordinates: z.object({
+        lat: z.number().gte(-90).lte(90),
+        lng: z.number().gte(-180).lte(180)
+    }).optional(),
     dropLocation: z.string(),
     distance: z.number().positive().optional(),
     paymentMethod: z.enum(Object.values(PAYMENT_METHOD)),

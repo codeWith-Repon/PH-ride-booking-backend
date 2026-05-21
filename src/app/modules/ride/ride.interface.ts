@@ -13,12 +13,18 @@ export enum RIDE_STATUS {
 }
 
 
+export interface IPickupCoordinates {
+    lat: number;
+    lng: number;
+}
+
 export interface IRide {
     _id?: Types.ObjectId;
     user: Types.ObjectId;
-    driver: Types.ObjectId;
+    driver?: Types.ObjectId;
     payment?: Types.ObjectId;
     pickupLocation: string;
+    pickupCoordinates?: IPickupCoordinates;
     dropLocation: string;
     rideStatus: RIDE_STATUS;
     paymentStatus: PAYMENT_STATUS;

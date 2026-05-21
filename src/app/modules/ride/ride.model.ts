@@ -11,8 +11,7 @@ const rideSchema = new Schema<IRide>({
     },
     driver: {
         type: Schema.Types.ObjectId,
-        ref: "Driver",
-        required: true
+        ref: "Driver"
     },
     payment: {
         type: Schema.Types.ObjectId,
@@ -22,6 +21,10 @@ const rideSchema = new Schema<IRide>({
     pickupLocation: {
         type: String,
         required: true
+    },
+    pickupCoordinates: {
+        lat: { type: Number, min: -90, max: 90 },
+        lng: { type: Number, min: -180, max: 180 }
     },
     dropLocation: {
         type: String,
