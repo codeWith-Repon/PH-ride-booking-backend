@@ -18,20 +18,34 @@ import calculateFare from "../../utils/calculateFare";
 import getTransactionId from "../../utils/transactionId";
 import { deleteRideOtp, getRideOtp, setRideOtp } from "./rideOtp.radis";
 import { NotificationServices } from "../notification/notification.service";
+import { MatchingServices } from "../matching/matching.service";
 
 
 const createRide = async (payload: IRide, decodedToken: JwtPayload) => {
     const generateOtp = Math.floor(100000 + Math.random() * 900000)
 
-    const { driver, distance, paymentMethod } = payload
+    const { driver, distance, paymentMethod, pickupCoordinates } = payload
     const { userId } = decodedToken
+
+    // Auto-assign a driver when the rider didn't pick one
+    let resolvedDriverId = driver
+    if (!resolvedDriverId) {
+        if (!pickupCoordinates) {
+            throw new AppError(400, "pickupCoordinates are required for auto-matching when no driver is specified")
+        }
+        const best = await MatchingServices.findBestDriver({
+            lat: pickupCoordinates.lat,
+            lng: pickupCoordinates.lng
+        })
+        resolvedDriverId = best.driverId
+    }
 
     const session = await mongoose.startSession()
 
     session.startTransaction()
 
     try {
-        const isDriverExist = await Driver.findById(driver)
+        const isDriverExist = await Driver.findById(resolvedDriverId)
         const isUserExist = await User.findById(userId)
 
         if (!isUserExist) {
@@ -63,7 +77,7 @@ const createRide = async (payload: IRide, decodedToken: JwtPayload) => {
         }
 
         const checkDriverOngoingRide = await Ride.findOne({
-            driver,
+            driver: resolvedDriverId,
             rideStatus: {
                 $in: [RIDE_STATUS.ACCEPTED, RIDE_STATUS.PICKED_UP, RIDE_STATUS.IN_TRANSIT]
             }
@@ -79,6 +93,7 @@ const createRide = async (payload: IRide, decodedToken: JwtPayload) => {
             {
                 ...payload,
                 user: userId,
+                driver: resolvedDriverId,
                 rideOtp: generateOtp,
                 fare,
                 paymentStatus: PAYMENT_STATUS.UNPAID

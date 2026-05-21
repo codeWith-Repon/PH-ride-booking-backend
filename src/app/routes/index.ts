@@ -8,6 +8,7 @@ import { OtpRoutes } from "../modules/otp/otp.route";
 import { SOSRoutes } from "../modules/SOS/sos.route";
 import { StatsRoutes } from "../modules/stats/stats.route";
 import { notificationRoutes } from "../modules/notification/notification.route";
+import { matchingRoutes } from "../modules/matching/matching.route";
 
 
 export const router = Router()
@@ -48,6 +49,10 @@ const moduleRoutes = [
     {
         path: "/notifications",
         route: notificationRoutes
+    },
+    {
+        path: "/matching",
+        route: matchingRoutes
     }
 ]
 
