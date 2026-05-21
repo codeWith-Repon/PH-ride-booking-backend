@@ -176,11 +176,27 @@ const getSingleDriver = async (driverId: string) => {
     return driver
 }
 
+const updateMyLocation = async (decodedToken: JwtPayload, payload: { lat: number; lng: number }) => {
+    const driver = await Driver.findOne({ user: decodedToken.userId })
+    if (!driver) throw new AppError(404, "Driver profile not found")
+
+    driver.currentLocation = {
+        type: "Point",
+        coordinates: [payload.lng, payload.lat]
+    }
+    driver.lastLocationAt = new Date()
+
+    await driver.save()
+
+    return driver
+}
+
 export const driverService = {
     createDriver,
     // changeDriverStatus,
     updateDriver,
     getAllDriver,
     getSingleDriver,
-    getAllFreeDriver
+    getAllFreeDriver,
+    updateMyLocation
 }

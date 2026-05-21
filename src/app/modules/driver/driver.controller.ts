@@ -89,11 +89,24 @@ const getSingleDriver = catchAsync(async (req: Request, res: Response, next: Nex
     })
 })
 
+const updateMyLocation = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+    const decodedToken = req.user as JwtPayload
+    const result = await driverService.updateMyLocation(decodedToken, req.body)
+
+    sendResponse(res, {
+        success: true,
+        statusCode: 200,
+        message: "Driver location updated",
+        data: result
+    })
+})
+
 export const driverController = {
     createDriver,
     // changeDriverStatus,
     updateDriver,
     getAllDriver,
     getSingleDriver,
-    getAllFreeDriver
+    getAllFreeDriver,
+    updateMyLocation
 }
