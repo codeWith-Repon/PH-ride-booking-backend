@@ -18,6 +18,7 @@ import calculateFare from "../../utils/calculateFare";
 import getTransactionId from "../../utils/transactionId";
 import { deleteRideOtp, getRideOtp, setRideOtp } from "./rideOtp.radis";
 import { NotificationServices } from "../notification/notification.service";
+import { wsBroadcast } from "../../ws";
 
 
 const createRide = async (payload: IRide, decodedToken: JwtPayload) => {
@@ -130,6 +131,15 @@ const createRide = async (payload: IRide, decodedToken: JwtPayload) => {
             .populate("user", "name email image")
             .populate("driver", "_id user vehicle licenseNumber experience totalRides")
             .populate("payment", "ride transactionId paymentMethod status amount");
+
+        if (result) {
+            wsBroadcast.toRideParticipants(result._id.toString(), {
+                type: "ride:status",
+                rideId: result._id,
+                rideStatus: result.rideStatus,
+                ride: result
+            });
+        }
 
         return result;
 
@@ -299,6 +309,15 @@ const updateRideStatus = async (payload: Partial<IRide>, decodedToken: JwtPayloa
                 });
             }
 
+            if (payload.rideStatus === RIDE_STATUS.IN_TRANSIT) {
+                await NotificationServices.createNotification({
+                    recipient: ride.user,
+                    ride: ride._id,
+                    title: "Ride In Transit",
+                    message: "You are on the way to your destination."
+                });
+            }
+
             if (payload.rideStatus === RIDE_STATUS.COMPLETED) {
                 ride.completedAt = new Date();
 
@@ -331,6 +350,15 @@ const updateRideStatus = async (payload: Partial<IRide>, decodedToken: JwtPayloa
 
     else {
         throw new AppError(403, "You can't change ride status!");
+    }
+
+    if (ride) {
+        wsBroadcast.toRideParticipants(ride._id.toString(), {
+            type: "ride:status",
+            rideId: ride._id,
+            rideStatus: ride.rideStatus,
+            ride
+        });
     }
 
     return ride;
@@ -372,6 +400,11 @@ const otpVerify = async (payload: { otp: string }, decodedToken: JwtPayload, rid
 
     await rideInfo.save();
     await deleteRideOtp(rideInfo._id.toString());
+
+    wsBroadcast.toRideParticipants(rideInfo._id.toString(), {
+        type: "ride:otp-verified",
+        rideId: rideInfo._id
+    });
 
     return
 }
