@@ -1,13 +1,14 @@
 /* eslint-disable no-console */
-import { Server } from 'http'
+import http, { Server as HttpServer } from 'http'
 import mongoose from 'mongoose';
 import app from './app';
 import { envVars } from './app/config/env';
 import { seedSuperAdmin } from './app/utils/seedSuperAdmin';
 import { connectRedis } from './app/config/radis.config';
 import dns from 'dns';
+import { attachWebSocketServer } from './app/ws';
 
-let server: Server;
+let server: HttpServer;
 dns.setServers(['1.1.1.1', '8.8.8.8']);
 
 const startServer = async () => {
@@ -16,7 +17,10 @@ const startServer = async () => {
 
         console.log('connected to DB!')
 
-        server = app.listen(envVars.PORT, () => {
+        server = http.createServer(app);
+        attachWebSocketServer(server);
+
+        server.listen(envVars.PORT, () => {
             console.log(`Server is listening to port ${envVars.PORT}`)
         })
     } catch (error) {
@@ -81,4 +85,3 @@ process.on('SIGINT', () => {
 
     process.exit(1)
 })
-

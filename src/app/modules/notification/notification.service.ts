@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Notification } from "./notification.model";
+import { wsBroadcast } from "../../ws";
 
 const getMyNotifications = async (userId: string) => {
     return await Notification.find({ recipient: userId })
@@ -31,7 +32,14 @@ const createNotification = async (payload: {
     title: string;
     message: string;
 }) => {
-    return await Notification.create(payload);
+    const notification = await Notification.create(payload);
+
+    wsBroadcast.toUser(String(payload.recipient), {
+        type: "notification:new",
+        notification
+    });
+
+    return notification;
 };
 
 export const NotificationServices = {
