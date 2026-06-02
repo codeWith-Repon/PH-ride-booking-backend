@@ -2,14 +2,25 @@ import z from "zod";
 import { RIDE_STATUS } from "./ride.interface";
 import { PAYMENT_METHOD } from "../payment/payment.interface";
 
-export const createRideZodSchema = z.object({
-    // user: z.string(),
-    driver: z.string(),
-    pickupLocation: z.string(),
-    dropLocation: z.string(),
-    distance: z.number().positive().optional(),
-    paymentMethod: z.enum(Object.values(PAYMENT_METHOD)),
-})
+export const createRideZodSchema = z
+    .object({
+        // user: z.string(),
+        driver: z.string().optional(),
+        pickupLocation: z.string(),
+        pickupCoordinates: z
+            .object({
+                lat: z.number().min(-90).max(90),
+                lng: z.number().min(-180).max(180),
+            })
+            .optional(),
+        dropLocation: z.string(),
+        distance: z.number().positive().optional(),
+        paymentMethod: z.enum(Object.values(PAYMENT_METHOD)),
+    })
+    .refine((data) => data.driver || data.pickupCoordinates, {
+        message: "Either driver or pickupCoordinates is required",
+        path: ["driver"],
+    })
 
 export const updateRideZodSchema = z.object({
     user: z.string().optional(),

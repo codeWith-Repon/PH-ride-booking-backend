@@ -19,12 +19,17 @@ import getTransactionId from "../../utils/transactionId";
 import { deleteRideOtp, getRideOtp, setRideOtp } from "./rideOtp.radis";
 import { NotificationServices } from "../notification/notification.service";
 import { wsBroadcast } from "../../ws";
+import { matchingService } from "../matching/matching.service";
 
 
-const createRide = async (payload: IRide, decodedToken: JwtPayload) => {
+type CreateRidePayload = IRide & {
+    pickupCoordinates?: { lat: number; lng: number };
+};
+
+const createRide = async (payload: CreateRidePayload, decodedToken: JwtPayload) => {
     const generateOtp = Math.floor(100000 + Math.random() * 900000)
 
-    const { driver, distance, paymentMethod } = payload
+    const { driver, distance, paymentMethod, pickupCoordinates } = payload
     const { userId } = decodedToken
 
     const session = await mongoose.startSession()
@@ -32,12 +37,31 @@ const createRide = async (payload: IRide, decodedToken: JwtPayload) => {
     session.startTransaction()
 
     try {
-        const isDriverExist = await Driver.findById(driver)
         const isUserExist = await User.findById(userId)
-
         if (!isUserExist) {
             throw new AppError(400, "User does't exist")
         }
+
+        // Resolve the effective driver — either the one the rider picked, or
+        // the best server-side match against the rider's pickupCoordinates.
+        let effectiveDriverId: string | undefined =
+            driver ? driver.toString() : undefined;
+
+        if (!effectiveDriverId) {
+            if (!pickupCoordinates) {
+                throw new AppError(400, "pickupCoordinates is required for auto-match")
+            }
+            const best = await matchingService.getBest({
+                lat: pickupCoordinates.lat,
+                lng: pickupCoordinates.lng,
+            })
+            if (!best) {
+                throw new AppError(404, "No drivers nearby right now. Try again in a moment.")
+            }
+            effectiveDriverId = best.driverId
+        }
+
+        const isDriverExist = await Driver.findById(effectiveDriverId)
 
         if (!isDriverExist) {
             throw new AppError(400, "Driver does't exist")
@@ -64,7 +88,7 @@ const createRide = async (payload: IRide, decodedToken: JwtPayload) => {
         }
 
         const checkDriverOngoingRide = await Ride.findOne({
-            driver,
+            driver: effectiveDriverId,
             rideStatus: {
                 $in: [RIDE_STATUS.ACCEPTED, RIDE_STATUS.PICKED_UP, RIDE_STATUS.IN_TRANSIT]
             }
@@ -76,9 +100,14 @@ const createRide = async (payload: IRide, decodedToken: JwtPayload) => {
 
         const fare = distance ? calculateFare(distance) : 0
 
+        // Don't persist pickupCoordinates on the ride doc — the schema doesn't have it
+        // and it's only used for matching above.
+        const { pickupCoordinates: _omitted, ...persistedPayload } = payload
+
         const ride = await Ride.create([
             {
-                ...payload,
+                ...persistedPayload,
+                driver: effectiveDriverId,
                 user: userId,
                 rideOtp: generateOtp,
                 fare,
