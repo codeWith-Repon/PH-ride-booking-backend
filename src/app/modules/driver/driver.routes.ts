@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { driverController } from "./driver.controller";
 import validateRequest from "../../middlewares/validateRequest";
-import { createDriverZodSchema, updateDriverZodSchema } from "./driver.validation";
+import { createDriverZodSchema, updateDriverLocationZodSchema, updateDriverZodSchema } from "./driver.validation";
 import { checkAuth } from "../../middlewares/checkAuth";
 import { Role } from "../user/user.interface";
 
@@ -25,6 +25,12 @@ router.get("/drivers",
 router.get("/free-drivers",
     // checkAuth(...Object.values(Role)),
     driverController.getAllFreeDriver)
+
+// IMPORTANT: must be registered before /:driverId so the dynamic segment doesn't capture "me"
+router.patch("/me/location",
+    validateRequest(updateDriverLocationZodSchema),
+    checkAuth(Role.DRIVER),
+    driverController.updateMyLocation)
 
 router.get("/:driverId",
     checkAuth(...Object.values(Role)),

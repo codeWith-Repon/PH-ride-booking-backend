@@ -11,6 +11,12 @@ export enum DRIVER_STATUS {
     SUSPENDED = "SUSPENDED"
 }
 
+export interface IGeoPoint {
+    type: "Point";
+    /** [longitude, latitude] — GeoJSON order */
+    coordinates: [number, number];
+}
+
 export interface IDriver {
     user: Types.ObjectId;
     vehicle: Types.ObjectId;
@@ -20,4 +26,8 @@ export interface IDriver {
     totalEarnings: number;
     availabilityStatus: AVAILABILITY_STATUS;
     status: DRIVER_STATUS;
+    currentLocation?: IGeoPoint;
+    lastLocationAt?: Date;
+    rating?: number;       // 0..5
+    ratingCount?: number;
 }

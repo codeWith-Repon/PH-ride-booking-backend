@@ -176,11 +176,35 @@ const getSingleDriver = async (driverId: string) => {
     return driver
 }
 
+const updateMyLocation = async (
+    userId: string,
+    coords: { lat: number; lng: number }
+) => {
+    const driver = await Driver.findOneAndUpdate(
+        { user: userId },
+        {
+            currentLocation: {
+                type: "Point",
+                coordinates: [coords.lng, coords.lat], // GeoJSON: [lng, lat]
+            },
+            lastLocationAt: new Date(),
+        },
+        { new: true, projection: { currentLocation: 1, lastLocationAt: 1 } }
+    )
+
+    if (!driver) {
+        throw new AppError(404, "Driver profile not found")
+    }
+
+    return driver
+}
+
 export const driverService = {
     createDriver,
     // changeDriverStatus,
     updateDriver,
     getAllDriver,
     getSingleDriver,
-    getAllFreeDriver
+    getAllFreeDriver,
+    updateMyLocation
 }

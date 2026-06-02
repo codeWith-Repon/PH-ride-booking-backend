@@ -41,9 +41,36 @@ const driverSchema = new Schema<IDriver>({
         type: String,
         enum: Object.values(DRIVER_STATUS),
         default: DRIVER_STATUS.PENDING
+    },
+    currentLocation: {
+        type: {
+            type: String,
+            enum: ["Point"],
+            default: undefined
+        },
+        coordinates: {
+            type: [Number],   // [lng, lat]
+            default: undefined
+        }
+    },
+    lastLocationAt: {
+        type: Date
+    },
+    rating: {
+        type: Number,
+        default: 0,
+        min: 0,
+        max: 5
+    },
+    ratingCount: {
+        type: Number,
+        default: 0
     }
 }, {
     timestamps: true
 })
+
+// Enable geospatial queries on currentLocation
+driverSchema.index({ currentLocation: "2dsphere" });
 
 export const Driver = model<IDriver>("Driver", driverSchema)

@@ -15,6 +15,11 @@ export const createDriverZodSchema = z.object({
         .max(30, "Experience seems too high"),
 })
 
+export const updateDriverLocationZodSchema = z.object({
+    lat: z.number().min(-90).max(90),
+    lng: z.number().min(-180).max(180),
+})
+
 export const updateDriverZodSchema = z.object({
     user: z.string().optional(),
     vehicle: z.string().optional(),
