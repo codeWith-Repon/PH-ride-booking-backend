@@ -59,6 +59,18 @@ const rideSchema = new Schema<IRide>({
     },
     completedAt: {
         type: Date
+    },
+    rating: {
+        type: Number,
+        min: 1,
+        max: 5
+    },
+    ratingComment: {
+        type: String,
+        maxlength: 500
+    },
+    ratedAt: {
+        type: Date
     }
 }, {
     timestamps: true

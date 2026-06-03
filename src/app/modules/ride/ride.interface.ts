@@ -28,4 +28,7 @@ export interface IRide {
     isOtpVerified: boolean;
     startedAt?: Date;
     completedAt?: Date;
+    rating?: number;
+    ratingComment?: string;
+    ratedAt?: Date;
 }

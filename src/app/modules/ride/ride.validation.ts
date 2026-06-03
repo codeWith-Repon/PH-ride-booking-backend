@@ -57,3 +57,8 @@ export const updateRideZodSchema = z.object({
 export const updateRideStatusZodSchema = z.object({
     rideStatus: z.enum(RIDE_STATUS).optional()
 })
+
+export const rateRideZodSchema = z.object({
+    rating: z.number().int().min(1).max(5),
+    comment: z.string().max(500).optional(),
+})

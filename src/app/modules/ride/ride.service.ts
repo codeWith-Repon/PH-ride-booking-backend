@@ -569,6 +569,56 @@ const getCurrentRide = async (decodedToken: JwtPayload) => {
     return currentRide
 }
 
+const rateRide = async (
+    rideId: string,
+    payload: { rating: number; comment?: string },
+    decodedToken: JwtPayload
+) => {
+    const ride = await Ride.findById(rideId)
+    if (!ride) {
+        throw new AppError(404, "Ride not found")
+    }
+    if (ride.user.toString() !== decodedToken.userId) {
+        throw new AppError(403, "Only the rider can rate this ride")
+    }
+    if (ride.rideStatus !== RIDE_STATUS.COMPLETED) {
+        throw new AppError(400, "You can only rate a completed ride")
+    }
+    if (ride.rating) {
+        throw new AppError(400, "This ride has already been rated")
+    }
+
+    const session = await mongoose.startSession()
+    session.startTransaction()
+    try {
+        ride.rating = payload.rating
+        if (payload.comment) ride.ratingComment = payload.comment
+        ride.ratedAt = new Date()
+        await ride.save({ session })
+
+        // Roll the new rating into the driver's running average
+        const driver = await Driver.findById(ride.driver).session(session)
+        if (driver) {
+            const prevCount = driver.ratingCount ?? 0
+            const prevAvg = driver.rating ?? 0
+            const nextCount = prevCount + 1
+            const nextAvg =
+                (prevAvg * prevCount + payload.rating) / nextCount
+            driver.rating = Number(nextAvg.toFixed(2))
+            driver.ratingCount = nextCount
+            await driver.save({ session })
+        }
+
+        await session.commitTransaction()
+        return ride
+    } catch (error) {
+        await session.abortTransaction()
+        throw error
+    } finally {
+        session.endSession()
+    }
+}
+
 export const RideServices = {
     createRide,
     updateRideStatus,
@@ -576,5 +626,6 @@ export const RideServices = {
     getAllRide,
     getSingleRide,
     getRideHistory,
-    getCurrentRide
+    getCurrentRide,
+    rateRide
 }

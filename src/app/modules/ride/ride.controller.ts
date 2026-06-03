@@ -96,6 +96,21 @@ const getCurrentRide = catchAsync(async (req: Request, res: Response, next: Next
     })
 })
 
+const rateRide = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+    const { rideId } = req.params
+    const payload = req.body as { rating: number; comment?: string }
+    const decodedToken = req.user as JwtPayload
+
+    const result = await RideServices.rateRide(rideId, payload, decodedToken)
+
+    sendResponse(res, {
+        success: true,
+        statusCode: 200,
+        message: "Thanks for your rating",
+        data: result
+    })
+})
+
 export const rideController = {
     createRide,
     updateRideStatus,
@@ -103,5 +118,6 @@ export const rideController = {
     getAllRide,
     getSingleRide,
     getRideHistory,
-    getCurrentRide
+    getCurrentRide,
+    rateRide
 }
