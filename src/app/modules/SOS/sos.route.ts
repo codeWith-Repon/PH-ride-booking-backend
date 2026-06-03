@@ -8,6 +8,10 @@ import validateRequest from "../../middlewares/validateRequest";
 
 const router = Router()
 
+router.get("/",
+    checkAuth(Role.ADMIN, Role.SUPER_ADMIN),
+    SOSController.getAllSos)
+
 router.post("/add-contact",
     checkAuth(...Object.values(Role)),
     validateRequest(addEmergencyContactZodSchema),

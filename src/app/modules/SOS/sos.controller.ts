@@ -49,8 +49,20 @@ const updateSosStatus = catchAsync(async (req: Request, res: Response, next: Nex
 })
 
 
+const getAllSos = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+    const result = await SOSServices.getAllSos(req.query as Record<string, string>)
+    sendResponse(res, {
+        success: true,
+        statusCode: 200,
+        message: "SOS reports retrieved",
+        data: result
+    })
+})
+
+
 export const SOSController = {
     addEmergencyContact,
     sendSosMessage,
-    updateSosStatus
+    updateSosStatus,
+    getAllSos
 }

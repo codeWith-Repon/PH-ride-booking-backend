@@ -88,10 +88,54 @@ const updateSosStatus = async (sosId: string, payload: { status: SOS_STATUS }) =
     return await sos.save()
 }
 
+const getAllSos = async (query: Record<string, string>) => {
+    const filter: Record<string, any> = {}
+    if (query.status) filter.status = query.status
+
+    const page = Math.max(1, Number(query.page) || 1)
+    const limit = Math.min(100, Number(query.limit) || 20)
+    const skip = (page - 1) * limit
+
+    const [items, total] = await Promise.all([
+        SOS.find(filter)
+            .sort({ createdAt: -1 })
+            .skip(skip)
+            .limit(limit)
+            .populate("sender", "name email phone image")
+            .populate({
+                path: "ride",
+                select: "user driver pickupLocation dropLocation rideStatus",
+                populate: [
+                    { path: "user", select: "name email phone" },
+                    {
+                        path: "driver",
+                        select: "user vehicle",
+                        populate: [
+                            { path: "user", select: "name email phone" },
+                            { path: "vehicle", select: "brand model vehicleLicense" }
+                        ]
+                    }
+                ]
+            }),
+        SOS.countDocuments(filter)
+    ])
+
+    return {
+        data: items,
+        meta: {
+            page,
+            limit,
+            total,
+            totalPage: Math.max(1, Math.ceil(total / limit))
+        }
+    }
+}
+
 
 
 export const SOSServices = {
     addEmergencyContact,
     sendSosMessage,
-    updateSosStatus
+    updateSosStatus,
+    getAllSos
 }
