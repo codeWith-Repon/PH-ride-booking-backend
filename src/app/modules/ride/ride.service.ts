@@ -545,7 +545,7 @@ const getCurrentRide = async (decodedToken: JwtPayload) => {
         currentRide = await Ride.findOne(filter)
             .populate({
                 path: "driver",
-                select: "user licenseNumber experience totalRides",
+                select: "user licenseNumber experience totalRides currentLocation lastLocationAt",
                 populate: {
                     path: "user",
                     select: "name email image _id"

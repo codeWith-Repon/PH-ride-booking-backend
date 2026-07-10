@@ -5,8 +5,10 @@ import { Driver } from "./driver.model";
 import { Role } from "../user/user.interface";
 import { Vehicle } from "../vehicle/vehicle.model";
 import { RIDE_STATUS } from "../ride/ride.interface";
+import { Ride } from "../ride/ride.model";
 import { QueryBuilder } from "../../utils/QueryBuilder";
 import { nestedFilterMapping, nestedSearchMapping } from "./driver.constant";
+import { wsBroadcast } from "../../ws/ws.broadcast";
 
 
 const createDriver = async (payload: IDriver) => {
@@ -194,6 +196,22 @@ const updateMyLocation = async (
 
     if (!driver) {
         throw new AppError(404, "Driver profile not found")
+    }
+
+    const activeRide = await Ride.findOne({
+        driver: driver._id,
+        rideStatus: { $in: [RIDE_STATUS.ACCEPTED, RIDE_STATUS.PICKED_UP, RIDE_STATUS.IN_TRANSIT] }
+    }).select("_id user")
+
+    if (activeRide) {
+        wsBroadcast.toUser(activeRide.user.toString(), {
+            type: "location:update",
+            rideId: activeRide._id.toString(),
+            driverId: driver._id.toString(),
+            lat: coords.lat,
+            lng: coords.lng,
+            updatedAt: driver.lastLocationAt
+        })
     }
 
     return driver
