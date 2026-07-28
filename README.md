@@ -10,7 +10,8 @@ A secure, scalable, modular backend for a ride-booking platform — Node.js, Exp
 - **Role-based access** — `RIDER`, `DRIVER`, `ADMIN`, `SUPER_ADMIN` — enforced per-route via `checkAuth`.
 - **Full ride lifecycle** — request → match → accept → OTP-verify pickup → in-transit → complete/cancel, with fare calculation and a rolling driver rating average.
 - **Auto-matching** — riders can omit a driver and let the backend pick the best nearby candidate from pickup coordinates.
-- **Real-time layer** — a hand-rolled WebSocket server (`/ws`) broadcasts ride status changes, live driver location, and ride chat; REST endpoints exist as a fallback for every socket-driven feature.
+- **Real-time layer** — a hand-rolled WebSocket server (`/ws`) broadcasts ride status changes, live location (both directions), and ride chat; REST endpoints exist as a fallback for every socket-driven feature.
+- **Bidirectional live location** — the driver's position streams to the rider for the whole active ride (`PATCH /driver/me/location`); the rider's position streams to the driver too, but only up to pickup (`PATCH /ride/me/location`, gated to `REQUESTED`/`ACCEPTED` — stops automatically once `PICKED UP`).
 - **SOS / emergency contacts** — riders can flag an active ride; admins triage reports.
 - **Cloudinary uploads** for vehicle images via Multer.
 - **Zod validation** on every mutating route; **MongoDB transactions** on the booking path (requires a replica set — see Local development below).
@@ -155,7 +156,7 @@ All routes are prefixed with `/api/v1`. This is a summary — see each module's 
 | User | `/user` | `POST /register-user`, `GET /get-me`, `GET /users` (admin), `GET /:userId` (admin), `PATCH /update` |
 | Driver | `/driver` | `POST /register-driver`, `GET /drivers`, `GET /free-drivers`, `PATCH /me/location`, `GET /:driverId`, `PATCH /update/:driverId` |
 | Vehicle | `/vehicle` | `POST /register` (multipart images), `GET /vehicles`, `GET /:vehicleId`, `PATCH /update/:vehicleId` |
-| Ride | `/ride` | `POST /book`, `POST /verify-otp/:rideId`, `GET /rides`, `GET /current-ride`, `GET /history`, `POST /update-status/:rideId`, `POST /:rideId/rate`, `GET /:rideId` |
+| Ride | `/ride` | `POST /book`, `POST /verify-otp/:rideId`, `GET /rides`, `GET /current-ride`, `GET /history`, `PATCH /me/location` (rider's live position, `REQUESTED`/`ACCEPTED` only), `POST /update-status/:rideId`, `POST /:rideId/rate`, `GET /:rideId` |
 | Matching | `/matching` | `POST /candidates`, `POST /best` |
 | OTP | `/otp` | `POST /send`, `POST /verify` |
 | SOS | `/sos` | `GET /` (admin, paginated), `POST /add-contact`, `POST /send-message/:rideId`, `PATCH /update-status/:sosId` |
@@ -174,7 +175,7 @@ Cancellable: Rider (REQUESTED), Driver (before pickup)
 
 Connects at `ws://<host>/ws`, authenticated via `?token=`, `Authorization: Bearer`, or the `accessToken` cookie (checked in that order).
 
-**Server → client frames:** `connected`, `ride:status`, `ride:otp-verified`, `location:update`, `chat:new`, `chat:read`, `notification:new`, `error`.
+**Server → client frames:** `connected`, `ride:status`, `ride:otp-verified`, `location:update` (driver → rider), `rider-location:update` (rider → driver, pre-pickup only), `chat:new`, `chat:read`, `notification:new`, `error`.
 
 **Client → server frames:** `ping`, `chat:send`, `chat:read`.
 
