@@ -87,17 +87,19 @@ const logOut = catchAsync(async (req: Request, res: Response, next: NextFunction
     //     )
     // }
 
+    const isProd = envVars.NODE_ENV === "production"
+
     res.clearCookie("accessToken", {
         httpOnly: true,
-        secure: true,
-        sameSite: "none",
+        secure: isProd,
+        sameSite: isProd ? "none" : "lax",
         expires: new Date(0)
     })
 
     res.clearCookie("refreshToken", {
         httpOnly: true,
-        secure: true,
-        sameSite: "none",
+        secure: isProd,
+        sameSite: isProd ? "none" : "lax",
         expires: new Date(0)
     })
 

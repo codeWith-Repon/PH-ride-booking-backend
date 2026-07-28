@@ -3,7 +3,7 @@
 import { JwtPayload } from "jsonwebtoken";
 import AppError from "../../errorHelpers/AppError";
 import { Driver } from "../driver/driver.model";
-import { IRide, RIDE_STATUS } from "./ride.interface";
+import { IRide, RIDE_STATUS, RIDER_TRACKABLE_STATUSES } from "./ride.interface";
 import { Ride, RideDocument } from "./ride.model";
 import { Role } from "../user/user.interface";
 import { DRIVER_STATUS } from "../driver/driver.interface";
@@ -619,6 +619,42 @@ const rateRide = async (
     }
 }
 
+const updateMyLocationAsRider = async (
+    userId: string,
+    coords: { lat: number; lng: number }
+) => {
+    const ride = await Ride.findOneAndUpdate(
+        { user: userId, rideStatus: { $in: RIDER_TRACKABLE_STATUSES } },
+        {
+            riderCurrentLocation: {
+                type: "Point",
+                coordinates: [coords.lng, coords.lat], // GeoJSON: [lng, lat]
+            },
+            riderLastLocationAt: new Date(),
+        },
+        { new: true, projection: { riderCurrentLocation: 1, riderLastLocationAt: 1, driver: 1 } }
+    )
+
+    if (!ride) {
+        throw new AppError(404, "No trackable ride found")
+    }
+
+    if (ride.driver) {
+        const driver = await Driver.findById(ride.driver).select("user")
+        if (driver) {
+            wsBroadcast.toUser(driver.user.toString(), {
+                type: "rider-location:update",
+                rideId: ride._id.toString(),
+                lat: coords.lat,
+                lng: coords.lng,
+                updatedAt: ride.riderLastLocationAt
+            })
+        }
+    }
+
+    return ride
+}
+
 export const RideServices = {
     createRide,
     updateRideStatus,
@@ -627,5 +663,6 @@ export const RideServices = {
     getSingleRide,
     getRideHistory,
     getCurrentRide,
-    rateRide
+    rateRide,
+    updateMyLocationAsRider
 }

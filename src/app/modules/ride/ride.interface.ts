@@ -1,5 +1,6 @@
 import { Types } from "mongoose";
 import { PAYMENT_METHOD, PAYMENT_STATUS } from "../payment/payment.interface";
+import { IGeoPoint } from "../driver/driver.interface";
 
 
 export enum RIDE_STATUS {
@@ -11,6 +12,9 @@ export enum RIDE_STATUS {
     REJECTED = "REJECTED",
     CANCELLED = "CANCELLED"
 }
+
+/** Ride statuses during which the rider hasn't been picked up yet — the window rider-location tracking is active for. */
+export const RIDER_TRACKABLE_STATUSES: RIDE_STATUS[] = [RIDE_STATUS.REQUESTED, RIDE_STATUS.ACCEPTED];
 
 
 export interface IRide {
@@ -31,4 +35,7 @@ export interface IRide {
     rating?: number;
     ratingComment?: string;
     ratedAt?: Date;
+    /** Rider's live position — tracked only up to pickup (see RIDER_TRACKABLE_STATUSES). */
+    riderCurrentLocation?: IGeoPoint;
+    riderLastLocationAt?: Date;
 }

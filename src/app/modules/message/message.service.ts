@@ -68,12 +68,17 @@ const sendMessage = async (
 
     const recipientUserId = isRider ? driverUserId : riderUserId;
 
-    const message = await Message.create({
+    const created = await Message.create({
         ride: ride._id,
         sender: new Types.ObjectId(senderUserId),
         recipient: new Types.ObjectId(recipientUserId),
         text
     });
+
+    const message = await created.populate([
+        { path: "sender", select: "name role image" },
+        { path: "recipient", select: "name role image" }
+    ]);
 
     return { message, recipientUserId };
 };

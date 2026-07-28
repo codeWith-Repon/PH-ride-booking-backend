@@ -111,6 +111,20 @@ const rateRide = catchAsync(async (req: Request, res: Response, next: NextFuncti
     })
 })
 
+const updateMyLocation = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+    const decodedToken = req.user as JwtPayload
+    const { lat, lng } = req.body as { lat: number; lng: number }
+
+    const result = await RideServices.updateMyLocationAsRider(decodedToken.userId, { lat, lng })
+
+    sendResponse(res, {
+        success: true,
+        statusCode: 200,
+        message: "Location updated",
+        data: result
+    })
+})
+
 export const rideController = {
     createRide,
     updateRideStatus,
@@ -119,5 +133,6 @@ export const rideController = {
     getSingleRide,
     getRideHistory,
     getCurrentRide,
-    rateRide
+    rateRide,
+    updateMyLocation
 }

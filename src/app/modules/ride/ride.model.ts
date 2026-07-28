@@ -71,6 +71,20 @@ const rideSchema = new Schema<IRide>({
     },
     ratedAt: {
         type: Date
+    },
+    riderCurrentLocation: {
+        type: {
+            type: String,
+            enum: ["Point"],
+            default: undefined
+        },
+        coordinates: {
+            type: [Number],   // [lng, lat]
+            default: undefined
+        }
+    },
+    riderLastLocationAt: {
+        type: Date
     }
 }, {
     timestamps: true

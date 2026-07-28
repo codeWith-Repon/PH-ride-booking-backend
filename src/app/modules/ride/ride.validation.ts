@@ -62,3 +62,8 @@ export const rateRideZodSchema = z.object({
     rating: z.number().int().min(1).max(5),
     comment: z.string().max(500).optional(),
 })
+
+export const updateRiderLocationZodSchema = z.object({
+    lat: z.number().min(-90).max(90),
+    lng: z.number().min(-180).max(180),
+})

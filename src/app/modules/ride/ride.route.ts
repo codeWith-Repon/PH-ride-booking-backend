@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { rideController } from "./ride.controller";
 import validateRequest from "../../middlewares/validateRequest";
-import { createRideZodSchema, rateRideZodSchema, updateRideStatusZodSchema } from "./ride.validation";
+import { createRideZodSchema, rateRideZodSchema, updateRideStatusZodSchema, updateRiderLocationZodSchema } from "./ride.validation";
 import { checkAuth } from "../../middlewares/checkAuth";
 import { Role } from "../user/user.interface";
 
@@ -28,6 +28,11 @@ router.get("/current-ride",
 router.get("/history",
     checkAuth(Role.DRIVER, Role.RIDER),
     rideController.getRideHistory)
+
+router.patch("/me/location",
+    validateRequest(updateRiderLocationZodSchema),
+    checkAuth(Role.RIDER),
+    rideController.updateMyLocation)
 
 
 router.post("/update-status/:rideId",
